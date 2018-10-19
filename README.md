@@ -6,10 +6,15 @@ The diagram builder demo application showcases creating diagrams such as flow ch
 
 ### Install
 
-To install all dependent packages, use the below command
+* To install all dependent packages, use the below command.
 
 ```
 npm install
+```
+* Install webpack CLI using below command.
+
+```
+npm i webpack-cli
 ```
 
 ### Run

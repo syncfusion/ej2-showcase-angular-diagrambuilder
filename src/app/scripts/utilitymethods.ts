@@ -8,12 +8,12 @@ import {
     Diagram, ShapeAnnotation, ConnectorConstraints, Connector, Node, PathAnnotationModel, TextStyle, TextStyleModel, SelectorConstraints, TextAlign, HorizontalAlignment, VerticalAlignment
 } from '@syncfusion/ej2-diagrams';
 import { SelectorViewModel } from './selector';
-import { Dialog } from '@syncfusion/ej2-ng-popups';
+import { Dialog } from '@syncfusion/ej2-angular-popups';
 import { MindMapUtilityMethods, MindMap } from './mindmap';
 import { OrgChartUtilityMethods, OrgChartData } from './orgchart';
-import { DropDownButton } from '@syncfusion/ej2-ng-splitbuttons';
+import { DropDownButton } from '@syncfusion/ej2-angular-splitbuttons';
 import { LinearGradient, Ajax } from '@syncfusion/ej2-base';
-import { Toolbar, ContextMenu } from '@syncfusion/ej2-ng-navigations';
+import { Toolbar, ContextMenu } from '@syncfusion/ej2-angular-navigations';
 import { PageCreation } from './pages';
 
 

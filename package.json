@@ -1,5 +1,5 @@
 {
-    "name": "@syncfusion/ej2-ng-diagrambuilder",
+    "name": "@syncfusion/ej2-angular-diagrambuilder",
     "version": "0.0.1",
     "description": "Essential JS 2 for Angular - Diagram Builder application",
     "author": "Syncfusion Inc.",
@@ -21,15 +21,15 @@
         "@angular/compiler": "~5.0.0",
         "@angular/platform-browser": "~5.0.0",
         "@angular/platform-browser-dynamic": "~5.0.0",
-        "@syncfusion/ej2-ng-base": "*",
-        "@syncfusion/ej2-ng-navigations": "*",
-        "@syncfusion/ej2-ng-lists": "*",
-        "@syncfusion/ej2-ng-buttons": "*",
-        "@syncfusion/ej2-ng-dropdowns": "*",
-        "@syncfusion/ej2-ng-inputs": "*",
-        "@syncfusion/ej2-ng-popups": "*",
-        "@syncfusion/ej2-ng-splitbuttons": "*",
-        "@syncfusion/ej2-ng-diagrams": "*"
+        "@syncfusion/ej2-angular-base": "*",
+        "@syncfusion/ej2-angular-navigations": "*",
+        "@syncfusion/ej2-angular-lists": "*",
+        "@syncfusion/ej2-angular-buttons": "*",
+        "@syncfusion/ej2-angular-dropdowns": "*",
+        "@syncfusion/ej2-angular-inputs": "*",
+        "@syncfusion/ej2-angular-popups": "*",
+        "@syncfusion/ej2-angular-splitbuttons": "*",
+        "@syncfusion/ej2-angular-diagrams": "*"
     },
     "devDependencies": {
         "@angular/cli": "1.5.6",
