@@ -1,26 +1,26 @@
 import { Component, ViewEncapsulation, ViewChild, AfterViewInit, SimpleChanges, Input } from '@angular/core';
 import { DataManager } from '@syncfusion/ej2-data';
 import { formatUnit, createElement, closest, Ajax } from '@syncfusion/ej2-base';
-import { ChangeEventArgs as NumericChangeEventArgs, UploaderComponent } from '@syncfusion/ej2-ng-inputs';
+import { ChangeEventArgs as NumericChangeEventArgs, UploaderComponent } from '@syncfusion/ej2-angular-inputs';
 import {
     Toolbar, MenuItemModel, ItemModel as ToolbarItemModel,
     OpenCloseMenuEventArgs, MenuAnimationSettings, MenuEventArgs as ContextMenuEventArgs,
     ClickEventArgs, ToolbarComponent
-} from '@syncfusion/ej2-ng-navigations';
+} from '@syncfusion/ej2-angular-navigations';
 import {
     ItemModel, BeforeOpenCloseMenuEventArgs,
     MenuEventArgs, DropDownButtonComponent
-} from '@syncfusion/ej2-ng-splitbuttons';
-import { DialogComponent, PositionDataModel, BeforeOpenEventArgs, TooltipEventArgs, Position } from '@syncfusion/ej2-ng-popups';
-import { AnimationSettingsModel, TooltipComponent } from '@syncfusion/ej2-ng-popups';
+} from '@syncfusion/ej2-angular-splitbuttons';
+import { DialogComponent, PositionDataModel, BeforeOpenEventArgs, TooltipEventArgs, Position } from '@syncfusion/ej2-angular-popups';
+import { AnimationSettingsModel, TooltipComponent } from '@syncfusion/ej2-angular-popups';
 import {
     FieldSettingsModel, ChangeEventArgs, PopupEventArgs, MultiSelect, MultiSelectChangeEventArgs,
     DropDownListComponent, MultiSelectComponent
-} from '@syncfusion/ej2-ng-dropdowns';
+} from '@syncfusion/ej2-angular-dropdowns';
 import {
     ChangeEventArgs as CheckBoxChangeEventArgs, ChangeArgs, Button, ButtonComponent,
     CheckBoxComponent
-} from '@syncfusion/ej2-ng-buttons';
+} from '@syncfusion/ej2-angular-buttons';
 import {
     Diagram, NodeModel, ConnectorModel, PortVisibility,
     ISelectionChangeEventArgs, Node, Connector, NodeConstraints, ShapeAnnotationModel,

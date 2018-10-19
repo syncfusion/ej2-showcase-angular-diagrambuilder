@@ -17,7 +17,7 @@ import { OrgChartUtilityMethods } from './orgchart';
 import { TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { Ajax } from '@syncfusion/ej2-base';
 import { PageCreation } from '../scripts/pages';
-import { DropDownListComponent } from '@syncfusion/ej2-ng-dropdowns';
+import { DropDownListComponent } from '@syncfusion/ej2-angular-dropdowns';
 import { PaperSize } from './utilitymethods';
 
 export class DiagramClientSideEvents {

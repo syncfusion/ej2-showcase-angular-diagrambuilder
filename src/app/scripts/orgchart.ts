@@ -5,9 +5,9 @@ import {
 } from '@syncfusion/ej2-diagrams';
 import { SelectorViewModel } from './selector';
 import { DataManager } from '@syncfusion/ej2-data';
-import { DropDownList, MultiSelect } from '@syncfusion/ej2-ng-dropdowns';
-import { Dialog } from '@syncfusion/ej2-ng-popups';
-import { CheckBox } from '@syncfusion/ej2-ng-buttons';
+import { DropDownList, MultiSelect } from '@syncfusion/ej2-angular-dropdowns';
+import { Dialog } from '@syncfusion/ej2-angular-popups';
+import { CheckBox } from '@syncfusion/ej2-angular-buttons';
 import { MindMapUtilityMethods } from './mindmap';
 import { CustomProperties } from './customproperties';
 import { CommonKeyboardCommands } from './commoncommands';

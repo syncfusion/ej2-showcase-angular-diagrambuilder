@@ -6,7 +6,7 @@ import { SelectorViewModel } from './selector';
 import { Button, CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { LayerModel } from '@syncfusion/ej2-diagrams/src/diagram/diagram/layer-model';
 import { Diagram } from '@syncfusion/ej2-diagrams';
-import { Dialog } from '@syncfusion/ej2-ng-popups';
+import { Dialog } from '@syncfusion/ej2-angular-popups';
 
 
 export class DiagramBuilderLayer {
