@@ -11,10 +11,10 @@ The diagram builder demo application showcases creating diagrams such as flow ch
 ```
 npm install
 ```
-* Install webpack CLI using below command.
+*Install webpack CLI using below command.
 
 ```
-npm i webpack-cli
+npm install webpack/cli@1.5.6
 ```
 
 ### Run
