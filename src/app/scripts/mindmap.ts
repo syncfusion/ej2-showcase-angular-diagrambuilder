@@ -601,9 +601,9 @@ export abstract class MindMapUtilityMethods {
         let diagram: Diagram = this.selectedItem.selectedDiagram;
         if (diagram.selectedItems.nodes.length > 0) {
             this.selectedItem.preventPropertyChange = true;
-            diagram.historyList.startGroupAction();
+            diagram.historyManager.startGroupAction();
             this.removeSubChild(diagram.selectedItems.nodes[0] as Node);
-            diagram.historyList.endGroupAction();
+            diagram.historyManager.endGroupAction();
             diagram.doLayout();
             this.selectedItem.preventPropertyChange = false;
         }
