@@ -572,10 +572,10 @@ export class UtilityMethods {
             if (selectedItem.pasteData.length === 0 && itemText === 'Paste') {
                 return true;
             }
-            if (itemText === 'Undo' && selectedItem.selectedDiagram.historyList.undoStack.length === 0) {
+            if (itemText === 'Undo' && selectedItem.selectedDiagram.historyManager.undoStack.length === 0) {
                 return true;
             }
-            if (itemText === 'Redo' && selectedItem.selectedDiagram.historyList.redoStack.length === 0) {
+            if (itemText === 'Redo' && selectedItem.selectedDiagram.historyManager.redoStack.length === 0) {
                 return true;
             }
             if (itemText === 'Select All') {

@@ -162,7 +162,7 @@ export class DiagramTheme {
 
     public applyOldStyle(): void {
         let diagram: Diagram = this.selectedItem.selectedDiagram;
-        diagram.historyList.startGroupAction();
+        diagram.historyManager.startGroupAction();
         for (let i: number = 0; i < this.nodeOldStyles.length; i++) {
             let themeStyle: { [key: string]: string } = this.nodeOldStyles[i];
             let node: Node = MindMapUtilityMethods.getNode(diagram.nodes, this.nodeOldStyles[i].name.toString());
@@ -183,7 +183,7 @@ export class DiagramTheme {
             diagram.dataBind();
         }
         this.isThemeApplied = false;
-        diagram.historyList.endGroupAction();
+        diagram.historyManager.endGroupAction();
     }
 
     public themeClick(args: MouseEvent): void {
@@ -230,7 +230,7 @@ export class DiagramTheme {
     public applyStyle(themeName: string): void {
         let themeType: { [key: string]: Object } = this.getThemeStyle(themeName);
         let diagram: Diagram = this.selectedItem.selectedDiagram;
-        diagram.historyList.startGroupAction();
+        diagram.historyManager.startGroupAction();
         if (diagram.nodes.length > 0) {
             let nodes: Node[] = diagram.nodes as Node[];
             for (let i: number = 0; i < nodes.length; i++) {
@@ -263,6 +263,6 @@ export class DiagramTheme {
             }
             diagram.dataBind();
         }
-        diagram.historyList.endGroupAction();
+        diagram.historyManager.endGroupAction();
     }
 }

@@ -330,9 +330,9 @@ export abstract class OrgChartUtilityMethods {
         this.orgChart = new OrgChartData(this.selectedItem);
         this.columnsList = [];
         if (this.fileType === 'csv') {
-            this.orgDataSource = OrgChartUtilityMethods.convertCsvToJson((event.target as FileReader).result);
+            this.orgDataSource = OrgChartUtilityMethods.convertCsvToJson((event.target as FileReader).result.toString());
         } else if (this.fileType === 'json') {
-            this.orgDataSource = JSON.parse((event.target as FileReader).result);
+            this.orgDataSource = JSON.parse((event.target as FileReader).result.toString());
             for (let i: number = 0; i < this.orgDataSource.length; i++) {
                 let attr: { [key: string]: Object } = this.orgDataSource[i] as { [key: string]: Object };
                 for (let prop in attr) {
@@ -375,9 +375,9 @@ export abstract class OrgChartUtilityMethods {
         let diagram: Diagram = this.selectedItem.selectedDiagram;
         if (diagram.selectedItems.nodes.length > 0) {
             this.selectedItem.preventPropertyChange = true;
-            diagram.historyList.startGroupAction();
+            diagram.historyManager.startGroupAction();
             this.removeSubChild(diagram.selectedItems.nodes[0] as Node);
-            diagram.historyList.endGroupAction();
+            diagram.historyManager.endGroupAction();
             diagram.doLayout();
             this.selectedItem.preventPropertyChange = false;
         }

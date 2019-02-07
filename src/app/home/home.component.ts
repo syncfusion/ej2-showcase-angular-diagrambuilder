@@ -5,7 +5,7 @@ import { ChangeEventArgs as NumericChangeEventArgs, UploaderComponent } from '@s
 import {
     Toolbar, MenuItemModel, ItemModel as ToolbarItemModel,
     OpenCloseMenuEventArgs, MenuAnimationSettings, MenuEventArgs as ContextMenuEventArgs,
-    ClickEventArgs, ToolbarComponent
+    ClickEventArgs, ToolbarComponent, MenuAnimationSettingsModel
 } from '@syncfusion/ej2-angular-navigations';
 import {
     ItemModel, BeforeOpenCloseMenuEventArgs,
@@ -116,7 +116,7 @@ export class HomeComponent implements AfterViewInit {
     public ddlTextPosition: DropDownListComponent;
 
     /* ContextMenu Animation Settings */
-    public animationSettings: MenuAnimationSettings = { effect: 'None' };
+    public animationSettings: MenuAnimationSettingsModel = { effect: 'None' };
 
     /* DropDown Members */
     public dropdownListFields: FieldSettingsModel = { text: 'text', value: 'value' };
@@ -1241,7 +1241,7 @@ export class HomeComponent implements AfterViewInit {
     }
 
     public loadDiagram(event: ProgressEvent): void {
-        this.page.loadPage((event.target as FileReader).result);
+        this.page.loadPage((event.target as FileReader).result.toString());
         this.page.loadDiagramSettings();
         this.fileUploadDialog.hide();
     }
