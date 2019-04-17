@@ -1,42 +1,27 @@
-import { Component, ViewEncapsulation, ViewChild, AfterViewInit, SimpleChanges, Input } from '@angular/core';
-import { DataManager } from '@syncfusion/ej2-data';
-import { formatUnit, createElement, closest, Ajax } from '@syncfusion/ej2-base';
-import { ChangeEventArgs as NumericChangeEventArgs, UploaderComponent } from '@syncfusion/ej2-angular-inputs';
+import { Component, ViewEncapsulation, ViewChild, AfterViewInit } from '@angular/core';
+import { formatUnit, createElement, closest } from '@syncfusion/ej2-base';
+import { UploaderComponent } from '@syncfusion/ej2-angular-inputs';
 import {
-    Toolbar, MenuItemModel, ItemModel as ToolbarItemModel,
-    OpenCloseMenuEventArgs, MenuAnimationSettings, MenuEventArgs as ContextMenuEventArgs,
+    ItemModel as ToolbarItemModel, OpenCloseMenuEventArgs, MenuEventArgs as ContextMenuEventArgs,
     ClickEventArgs, ToolbarComponent, MenuAnimationSettingsModel
 } from '@syncfusion/ej2-angular-navigations';
-import {
-    ItemModel, BeforeOpenCloseMenuEventArgs,
-    MenuEventArgs, DropDownButtonComponent
-} from '@syncfusion/ej2-angular-splitbuttons';
+import { BeforeOpenCloseMenuEventArgs, MenuEventArgs, DropDownButtonComponent } from '@syncfusion/ej2-angular-splitbuttons';
 import { DialogComponent, PositionDataModel, BeforeOpenEventArgs, TooltipEventArgs, Position } from '@syncfusion/ej2-angular-popups';
 import { AnimationSettingsModel, TooltipComponent } from '@syncfusion/ej2-angular-popups';
+import { FieldSettingsModel, DropDownListComponent } from '@syncfusion/ej2-angular-dropdowns';
+import { Button, ButtonComponent } from '@syncfusion/ej2-angular-buttons';
 import {
-    FieldSettingsModel, ChangeEventArgs, PopupEventArgs, MultiSelect, MultiSelectChangeEventArgs,
-    DropDownListComponent, MultiSelectComponent
-} from '@syncfusion/ej2-angular-dropdowns';
-import {
-    ChangeEventArgs as CheckBoxChangeEventArgs, ChangeArgs, Button, ButtonComponent,
-    CheckBoxComponent
-} from '@syncfusion/ej2-angular-buttons';
-import {
-    Diagram, NodeModel, ConnectorModel, PortVisibility,
-    ISelectionChangeEventArgs, Node, Connector, NodeConstraints, ShapeAnnotationModel,
-    HorizontalAlignment, VerticalAlignment, TextAlign, Segments, DecoratorShapes,
+    Diagram, NodeModel, ConnectorModel, Node, Connector, NodeConstraints, ShapeAnnotationModel,
     ConnectorConstraints, DiagramTools, SnapConstraints, AlignmentOptions,
     UndoRedo, DiagramContextMenu, Snapping, BpmnDiagrams, HierarchicalTree, PrintAndExport,
-    MindMap as MindMapTree, ZoomOptions, DataBinding, Overview, DiagramRegions, ImageModel,
-    IDraggingEventArgs, ISizeChangeEventArgs, ConnectorBridging, LayoutAnimation, UserHandleModel, FileFormats,
-    PointModel, SymbolPalette, BpmnShapeModel, CommandManagerModel, Keys, KeyModifiers, SelectorConstraints
+    MindMap as MindMapTree, ZoomOptions, DataBinding, Overview, DiagramRegions, ConnectorBridging, 
+    LayoutAnimation, UserHandleModel, FileFormats, SymbolPalette, CommandManagerModel, Keys, KeyModifiers, SelectorConstraints
 } from '@syncfusion/ej2-diagrams';
 import { PageCreation } from '../scripts/pages';
 import { SelectorViewModel } from '../scripts/selector';
 import { generatePalette } from '../scripts/palettes';
-import { MindMap, MindMapUtilityMethods } from '../scripts/mindmap';
 import { CustomDiagram } from '../scripts/userhandles';
-import { OrgChartData, OrgChartUtilityMethods } from '../scripts/orgchart';
+import { OrgChartUtilityMethods } from '../scripts/orgchart';
 import { CustomProperties } from '../scripts/customproperties';
 import { DiagramBuilderLayer } from '../scripts/layers';
 import { DropDownDataSources } from '../scripts/dropdowndatasource';
@@ -268,8 +253,8 @@ export class HomeComponent implements AfterViewInit {
     private buttonInstance: any;
     public menumouseover(args: MouseEvent): void {
         let target: any = args.target as HTMLButtonElement;
-        if (target && (target.className === 'e-control e-dropdown-btn e-btn db-dropdown-menu' ||
-            target.className === 'e-control e-dropdown-btn e-btn db-dropdown-menu e-ddb-active')) {
+        if (target && (target.className === 'e-control e-dropdown-btn e-lib e-btn db-dropdown-menu' ||
+            target.className === 'e-control e-dropdown-btn e-lib e-btn db-dropdown-menu e-ddb-active')) {
             if (this.buttonInstance && this.buttonInstance.id !== target.id) {
                 if (this.buttonInstance.getPopUpElement().classList.contains('e-popup-open')) {
                     this.buttonInstance.toggle();

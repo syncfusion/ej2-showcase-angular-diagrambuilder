@@ -343,7 +343,7 @@ export abstract class OrgChartUtilityMethods {
             }
         } else {
             let parser: DOMParser = new DOMParser();
-            let xmlDom: XMLDocument = parser.parseFromString((event.target as FileReader).result, 'text/xml');
+            let xmlDom: XMLDocument = parser.parseFromString((event.target as FileReader).result.toString(), 'text/xml');
             let element: Element = xmlDom.children[0];
             this.orgDataSource = this.convertXmlToJson(element);
         }

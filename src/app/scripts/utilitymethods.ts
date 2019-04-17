@@ -5,16 +5,16 @@
 
 import {
     NodeModel, NodeConstraints, ShapeAnnotationModel, PointModel, ConnectorModel,
-    Diagram, ShapeAnnotation, ConnectorConstraints, Connector, Node, PathAnnotationModel, TextStyle, TextStyleModel, SelectorConstraints, TextAlign, HorizontalAlignment, VerticalAlignment
+    Diagram, ConnectorConstraints, Node, TextStyle, TextStyleModel, SelectorConstraints, 
+    TextAlign, HorizontalAlignment, VerticalAlignment, LinearGradient
 } from '@syncfusion/ej2-diagrams';
 import { SelectorViewModel } from './selector';
 import { Dialog } from '@syncfusion/ej2-angular-popups';
 import { MindMapUtilityMethods, MindMap } from './mindmap';
 import { OrgChartUtilityMethods, OrgChartData } from './orgchart';
-import { DropDownButton } from '@syncfusion/ej2-angular-splitbuttons';
-import { LinearGradient, Ajax } from '@syncfusion/ej2-base';
 import { Toolbar, ContextMenu } from '@syncfusion/ej2-angular-navigations';
 import { PageCreation } from './pages';
+import { Ajax } from '@syncfusion/ej2-base';
 
 
 export class PaperSize {

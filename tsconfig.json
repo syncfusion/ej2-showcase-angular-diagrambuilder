@@ -1,28 +1,35 @@
 {
-    "compilerOptions": {
-        "target": "es5",
-        "module": "amd",
-        "declaration": true,
-        "removeComments": true,
-        "noLib": false,
-        "lib": ["es2015", "dom"],
-        "experimentalDecorators": true,
-        "emitDecoratorMetadata": true,
-        "sourceMap": true,
-        "pretty": true,
-        "allowUnreachableCode": false,
-        "allowUnusedLabels": false,
-        "noImplicitAny": true,
-        "noImplicitReturns": true,
-        "noImplicitUseStrict": false,
-        "noFallthroughCasesInSwitch": true,
-        "allowJs": false,
-        "forceConsistentCasingInFileNames": true,
-        "moduleResolution": "node",
-        "types": ["requirejs"]
-    },
-    "exclude": [
-        "node_modules"
+  "compilerOptions": {
+    "importHelpers": true,
+    "target": "es5",
+    "module": "amd",
+    "declaration": true,
+    "removeComments": true,
+    "noLib": false,
+    "lib": [
+      "es2015",
+      "dom"
     ],
-    "compileOnSave": false
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "sourceMap": true,
+    "pretty": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitUseStrict": false,
+    "noFallthroughCasesInSwitch": true,
+    "allowJs": false,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "types": [
+      "requirejs"
+    ],
+    "baseUrl": "./"
+  },
+  "exclude": [
+    "node_modules"
+  ],
+  "compileOnSave": false
 }
