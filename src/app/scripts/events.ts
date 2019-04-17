@@ -244,10 +244,10 @@ export class DiagramClientSideEvents {
         let toolbarContainer: HTMLDivElement = document.getElementsByClassName('db-toolbar-container')[0] as HTMLDivElement;
         toolbarContainer.classList.remove('db-undo');
         toolbarContainer.classList.remove('db-redo');
-        if (diagram.historyList.undoStack.length > 0) {
+        if (diagram.historyManager.undoStack.length > 0) {
             toolbarContainer.classList.add('db-undo');
         }
-        if (diagram.historyList.redoStack.length > 0) {
+        if (diagram.historyManager.redoStack.length > 0) {
             toolbarContainer.classList.add('db-redo');
         }
     }
@@ -521,7 +521,7 @@ export class MindMapPropertyBinding {
     public mindmapPatternChange(args: MouseEvent): void {
         let target: HTMLDivElement = args.target as HTMLDivElement;
         let diagram: Diagram = this.selectedItem.selectedDiagram;
-        diagram.historyList.startGroupAction();
+        diagram.historyManager.startGroupAction();
         for (let i: number = 0; i < this.selectedItem.selectedDiagram.nodes.length; i++) {
             let node: Node = this.selectedItem.selectedDiagram.nodes[i] as Node;
             if (node.id !== 'textNode') {
@@ -559,7 +559,7 @@ export class MindMapPropertyBinding {
             }
             this.selectedItem.selectedDiagram.dataBind();
         }
-        diagram.historyList.endGroupAction();
+        diagram.historyManager.endGroupAction();
         this.selectedItem.selectedDiagram.doLayout();
         this.selectedItem.isModified = true;
     }

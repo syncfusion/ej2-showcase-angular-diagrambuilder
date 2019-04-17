@@ -11,10 +11,10 @@ The diagram builder demo application showcases creating diagrams such as flow ch
 ```
 npm install
 ```
-* Install webpack CLI using below command.
+* If Angular CLI is not installed into your machine, please use the below command to install Angular CLI.
 
 ```
-npm i webpack-cli
+npm install -g @angular/cli@7.2.4
 ```
 
 ### Run

@@ -5,16 +5,16 @@
 
 import {
     NodeModel, NodeConstraints, ShapeAnnotationModel, PointModel, ConnectorModel,
-    Diagram, ShapeAnnotation, ConnectorConstraints, Connector, Node, PathAnnotationModel, TextStyle, TextStyleModel, SelectorConstraints, TextAlign, HorizontalAlignment, VerticalAlignment
+    Diagram, ConnectorConstraints, Node, TextStyle, TextStyleModel, SelectorConstraints, 
+    TextAlign, HorizontalAlignment, VerticalAlignment, LinearGradient
 } from '@syncfusion/ej2-diagrams';
 import { SelectorViewModel } from './selector';
 import { Dialog } from '@syncfusion/ej2-angular-popups';
 import { MindMapUtilityMethods, MindMap } from './mindmap';
 import { OrgChartUtilityMethods, OrgChartData } from './orgchart';
-import { DropDownButton } from '@syncfusion/ej2-angular-splitbuttons';
-import { LinearGradient, Ajax } from '@syncfusion/ej2-base';
 import { Toolbar, ContextMenu } from '@syncfusion/ej2-angular-navigations';
 import { PageCreation } from './pages';
+import { Ajax } from '@syncfusion/ej2-base';
 
 
 export class PaperSize {
@@ -572,10 +572,10 @@ export class UtilityMethods {
             if (selectedItem.pasteData.length === 0 && itemText === 'Paste') {
                 return true;
             }
-            if (itemText === 'Undo' && selectedItem.selectedDiagram.historyList.undoStack.length === 0) {
+            if (itemText === 'Undo' && selectedItem.selectedDiagram.historyManager.undoStack.length === 0) {
                 return true;
             }
-            if (itemText === 'Redo' && selectedItem.selectedDiagram.historyList.redoStack.length === 0) {
+            if (itemText === 'Redo' && selectedItem.selectedDiagram.historyManager.redoStack.length === 0) {
                 return true;
             }
             if (itemText === 'Select All') {
