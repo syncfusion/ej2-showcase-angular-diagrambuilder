@@ -10,3 +10,6 @@ npm-debug.log
 *ngfactory.ts
 *metadata.json
 *ngsummary.json
+src/assets/index.css
+src/assets/*.css
+*.css

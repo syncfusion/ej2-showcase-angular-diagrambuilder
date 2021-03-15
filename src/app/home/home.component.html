@@ -7,10 +7,11 @@
     <div class='header navbar'>
         <div class="db-header-container">
             <div class="db-diagram-name-container">
-                <span id='diagramName' class="db-diagram-name" (click)='renameDiagram($event)'>Untitled Diagram</span>
+                <span id='diagramName' style="width:250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" class="db-diagram-name"
+                    (click)='renameDiagram($event)'>Untitled Diagram</span>
                 <input id='diagramEditable' type="text" class="db-diagram-name" (keydown)='diagramNameKeyDown($event)' (focusout)='diagramNameChange($event)'
                 />
-                <span id='diagramreport' class="db-diagram-name" style="float:right"></span>
+                <span id='diagramreport' class="db-diagram-name db-save-text"></span>
             </div>
             <div class='db-menu-container'>
                 <div class="db-menu-style">
@@ -59,7 +60,7 @@
                         </e-item>
                         <e-item type="Separator">
                         </e-item>
-                        <e-item prefixIcon="sf-icon-ZoomOut tb-icons" tooltipText="Zoom Out" cssClass="tb-item-start">
+                        <e-item prefixIcon="sf-icon-ZoomOut tb-icons" tooltipText="Zoom Out(Ctrl + -)" cssClass="tb-item-start">
                         </e-item>
                         <e-item cssClass="tb-item-end tb-zoom-dropdown-btn">
                             <ng-template #template>
@@ -68,7 +69,7 @@
                                 </button>
                             </ng-template>
                         </e-item>
-                        <e-item prefixIcon="sf-icon-ZoomIn tb-icons" tooltipText="Zoom In" cssClass="tb-item-end">
+                        <e-item prefixIcon="sf-icon-ZoomIn tb-icons" tooltipText="Zoom In(Ctrl + +)" cssClass="tb-item-end">
                         </e-item>
                         <e-item type="Separator">
                         </e-item>
@@ -94,9 +95,9 @@
                         </e-item>
                         <e-item type="Separator">
                         </e-item>
-                        <e-item prefixIcon="sf-icon-ColorPickers tb-icons"  mode="Palette" tooltipText="Fill Color" cssClass="tb-item-start tb-item-fill">
+                        <e-item prefixIcon="sf-icon-ColorPickers tb-icons" mode="Palette" tooltipText="Fill Color" cssClass="tb-item-start tb-item-fill">
                         </e-item>
-                        <e-item prefixIcon="sf-icon-Pickers tb-icons"  mode="Palette" tooltipText="Border Color" cssClass="tb-item-end tb-item-stroke">
+                        <e-item prefixIcon="sf-icon-Pickers tb-icons" mode="Palette" tooltipText="Border Color" cssClass="tb-item-end tb-item-stroke">
                         </e-item>
                         <!-- <e-item prefixIcon="sf-icon-Pickers tb-icons" tooltipText="Format" cssClass="tb-item-end">
                         </e-item> -->
@@ -156,7 +157,11 @@
     <div class='row content'>
         <div class='sidebar show-overview'>
             <div class="db-palette-parent">
-                <div id="symbolpalette"></div>
+                <!-- <div id="symbolpalette"></div> -->
+                <ejs-symbolpalette id="symbolpalette" #symbolpalette width="100%" height="100%" [symbolHeight]=50 [symbolWidth]=50 [expandMode]='palettes.expandMode'
+                    [palettes]='palettes.palettes' [enableSearch]='palettes.enableSearch' [symbolPreview]='palettes.symbolPreview'
+                    [symbolMargin]='palettes.symbolMargin' [getSymbolInfo]='palettes.getSymbolInfo' [getNodeDefaults]='palettes.setPaletteNodeDefaults'>
+                </ejs-symbolpalette>
             </div>
             <div class="db-overview-parent">
                 <div id="overview"></div>
@@ -165,13 +170,23 @@
                 <div id='overviewspan' class="db-overview">
                     <span></span>
                 </div>
-                <div class="db-palette-more-shapes-text" style="display: none">More Shapes</div>
+                <div class="db-palette-more-shapes-text" (click)='moreShapesClick($event)'>More Shapes</div>
             </div>
         </div>
         <div class='main-content' role='main'>
             <div class="db-diagram-container">
                 <div id="diagramContainerDiv" class='db-current-diagram-container'>
-                    <div id="diagram"></div>
+                    <!-- <div id="diagram"></div> -->
+                    <ejs-diagram #diagram id="diagram" width="100%" height="100%" [snapSettings]='snapSettings' [pageSettings]='pageSettings'
+                        [scrollSettings]='scrollSettings' [selectedItems]='selectedItems' [getNodeDefaults]='setNodeDefaults'
+                        [getConnectorDefaults]='setConnectorDefaults' [commandManager]='commandManager' backgroundColor="transparent"
+                        [contextMenuSettings]='contextMenuSettings' (selectionChange)='diagramEvents.selectionChange($event)'
+                        (positionChange)='diagramEvents.nodePositionChange($event)' (sizeChange)='diagramEvents.nodeSizeChange($event)'
+                        (rotateChange)='diagramEvents.nodeRotationChange($event)' (contextMenuOpen)='diagramEvents.diagramContextMenuOpen($event)'
+                        (contextMenuClick)='diagramEvents.diagramContextMenuClick($event)' (dragEnter)='diagramEvents.dragEnter($event)'
+                        (historyChange)='diagramEvents.historyChange($event)' (scrollChange)='diagramEvents.scrollChange($event)'
+                        (collectionChange)='collectionChange($event)' (drop)='drop($event)' [getCustomTool]='getCustomTool' (textEdit)='diagramEvents.textEdit($event)'>
+                    </ejs-diagram>
                 </div>
                 <div class="db-more-diagram-options-container">
                     <div id="pageOptionList">
@@ -225,7 +240,7 @@
                             <div class="col-xs-6 db-col-left">
                                 <div class="db-color-container">
                                     <div class="db-color-input">
-                                        <input type="color" ejs-colorpicker  mode="Palette" width="100%" [value]="selectedItem.pageSettings.backgroundColor" (change)='diagramPropertyBinding.pageBackgroundChange1($event)'
+                                        <input type="color" ejs-colorpicker mode="Palette" width="100%" [value]="selectedItem.pageSettings.backgroundColor" (change)='diagramPropertyBinding.pageBackgroundChange1($event)'
                                         />
                                     </div>
                                     <div class="db-color-btn">
@@ -341,7 +356,7 @@
                                     <div class="col-xs-6 db-col-left">
                                         <div class="db-color-container">
                                             <div class="db-color-input">
-                                                <input id="nodeFillColor" ejs-colorpicker type="color" [(value)]="selectedItem.nodeProperties.fillColor" />
+                                                <input id="nodeFillColor" ejs-colorpicker type="color" mode="Palette" [(value)]="selectedItem.nodeProperties.fillColor" />
                                             </div>
                                             <div class="db-color-btn">
                                                 <button ejs-button iconCss='sf-icon-ColorPickers tb-icons'>
@@ -356,13 +371,14 @@
                                     </div>
                                     <div class="col-xs-4 db-col-center">
                                         <ejs-dropdownlist [(value)]='selectedItem.nodeProperties.gradientDirection' [dataSource]='dropDownDataSources.gradientDirections'
-                                            [fields]='dropdownListFields'>
+                                            [fields]='dropdownListFields' popupWidth='200px'>
                                         </ejs-dropdownlist>
                                     </div>
                                     <div class="col-xs-4 db-col-right">
                                         <div class="db-color-container">
                                             <div class="db-color-input">
-                                                <input id="nodeGradientColor" ejs-colorpicker type="color"  mode="Palette" [(value)]="selectedItem.nodeProperties.gradientColor" />
+                                                <input id="nodeGradientColor" ejs-colorpicker type="color" mode="Palette" [(value)]="selectedItem.nodeProperties.gradientColor"
+                                                />
                                             </div>
                                             <div class="db-color-btn">
                                                 <button ejs-button iconCss='sf-icon-ColorPickers tb-icons'>
@@ -391,7 +407,8 @@
                                     <div class="col-xs-4 db-col-left">
                                         <div class="db-color-container">
                                             <div class="db-color-input">
-                                                <input id="nodeStrokeColor" ejs-colorpicker type="color"  mode="Palette" [(value)]="selectedItem.nodeProperties.strokeColor" />
+                                                <input id="nodeStrokeColor" ejs-colorpicker type="color" mode="Palette" [(value)]="selectedItem.nodeProperties.strokeColor"
+                                                />
                                             </div>
                                             <div class="db-color-btn">
                                                 <button ejs-button iconCss='sf-icon-Pickers tb-icons'>
@@ -452,7 +469,8 @@
                             <div class="col-xs-6 db-col-left">
                                 <div class="db-color-container">
                                     <div class="db-color-input">
-                                        <input id="lineColor" ejs-colorpicker  mode="Palette" type="color" [(value)]="selectedItem.connectorProperties.lineColor" />
+                                        <input id="lineColor" ejs-colorpicker mode="Palette" type="color" [(value)]="selectedItem.connectorProperties.lineColor"
+                                        />
                                     </div>
                                     <div class="db-color-btn">
                                         <button ejs-button iconCss='sf-icon-Pickers tb-icons'>
@@ -571,7 +589,7 @@
                             <div class="col-xs-6 db-col-right" id="textColorDiv">
                                 <div class="db-color-container">
                                     <div class="db-color-input">
-                                        <input id='textColor' ejs-colorpicker  mode="Palette" type="color" [(value)]="selectedItem.textProperties.fontColor" />
+                                        <input id='textColor' ejs-colorpicker mode="Palette" type="color" [(value)]="selectedItem.textProperties.fontColor" />
                                     </div>
                                     <div class="db-color-btn">
                                         <button ejs-button iconCss='sf-icon-ColorPickers tb-icons'>
@@ -666,7 +684,8 @@
                     </div>
                     <div class="row db-prop-row">
                         <div class="col-xs-6 db-col-left">
-                            <ejs-dropdownlist [(value)]='selectedItem.mindmapSettings.levelType' [dataSource]='dropDownDataSources.mindmapLevels' [fields]='dropdownListFields'>
+                            <ejs-dropdownlist id="mindMapLevels" [(value)]='selectedItem.mindmapSettings.levelType' [dataSource]='dropDownDataSources.mindmapLevels'
+                                [fields]='dropdownListFields'>
                             </ejs-dropdownlist>
                         </div>
                     </div>
@@ -687,7 +706,7 @@
                         <div class="col-xs-4 db-col-left">
                             <div class="db-color-container">
                                 <div class="db-color-input">
-                                    <input id='mindmapStroke' ejs-colorpicker  mode="Palette" [(value)]='selectedItem.mindmapSettings.stroke' type="color" />
+                                    <input id='mindmapStroke' ejs-colorpicker mode="Palette" [(value)]='selectedItem.mindmapSettings.stroke' type="color" />
                                 </div>
                                 <div class="db-color-btn">
                                     <button ejs-button iconCss='sf-icon-Pickers tb-icons'>
@@ -756,7 +775,8 @@
                         <div class="col-xs-6 db-col-right" id="textColorDiv">
                             <div class="db-color-container">
                                 <div class="db-color-input">
-                                    <input id='mindmapTextColor' ejs-colorpicker  mode="Palette" type="color" [(value)]="selectedItem.mindmapSettings.fontColor" />
+                                    <input id='mindmapTextColor' ejs-colorpicker mode="Palette" type="color" [(value)]="selectedItem.mindmapSettings.fontColor"
+                                    />
                                 </div>
                                 <div class="db-color-btn">
                                     <button ejs-button iconCss='sf-icon-ColorPickers tb-icons'>
@@ -887,7 +907,6 @@
         </div>
     </div>
 </div>
-
 <ejs-dialog id="exportDialog" #exportDialog width='400px' header='Export Diagram' [target]='dlgTarget' isModal='true' [animationSettings]='dialogAnimationSettings'
     [buttons]='exportingButtons' [visible]='dialogVisibility' showCloseIcon='true'>
     <ng-template #content>
@@ -1025,10 +1044,12 @@
                         <div style="float:left; width: calc(90% - 5px)">
                             <ul style="padding-left: 25px; margin-bottom: 0px">
                                 <li style="margin-bottom: 5px">
-                                    <span id="descriptionText1" style="color: #515151;font-size: 11px;line-height: 15px;">Make sure that the every column of your table has a header</span>
+                                    <span id="descriptionText1" style="color: #515151;font-size: 11px;line-height: 15px;">Make
+                                        sure that the every column of your table has a header</span>
                                 </li>
                                 <li>
-                                    <span id="descriptionText2" style="color: #515151;font-size: 11px;line-height: 15px;">Each employee should have a reporting person (except for top most employee of the organization)
+                                    <span id="descriptionText2" style="color: #515151;font-size: 11px;line-height: 15px;">Each
+                                        employee should have a reporting person (except for top most employee of the organization)
                                         and it should be indicated by any field from your data source.</span>
                                 </li>
                             </ul>
@@ -1190,6 +1211,24 @@
     </ng-template>
 </ejs-dialog>
 
+<ejs-dialog id="moreShapesDialog" #moreShapesDialog width='695px' height='470px' header='Shapes' [target]='dlgTarget' isModal="true"
+    [animationSettings]='dialogAnimationSettings' showCloseIcon='true' allowDragging='true' [buttons]='moreShapesButtons' [visible]='dialogVisibility'>
+    <ng-template #content>
+        <div id="moreShapesDialogContent">
+            <div class="row">
+                <div class="col-xs-3 temp-left-pane">
+                    <ejs-listview #moreShapesList id='moreShapesList' [fields]='listViewFields' [dataSource]='dropDownDataSources.listViewData' 
+                        [showCheckBox]='true' (select)='listViewSelectionChange($event)'>
+                    </ejs-listview>
+                </div>
+                <div class="col-xs-9 diagramTemplates temp-right-pane" style="padding-left:0px;padding-right:0px">
+                    <img id="shapePreviewImage" src="./assets/dbstyle/shapes_images/flow.png" />
+                </div>
+            </div>
+        </div>
+    </ng-template>
+</ejs-dialog>
+
 <ejs-dialog id="tooltipDialog" #tooltipDialog width='335px' header='Edit Tooltip' [target]='dlgTarget' isModal='true' [animationSettings]='dialogAnimationSettings'
     [visible]='dialogVisibility' [buttons]='tooltipButtons' showCloseIcon='true'>
     <ng-template #content>
@@ -1287,8 +1326,8 @@
 </ejs-dialog>
 
 <ejs-dialog id="themeDialog" #themeDialog width='174px' header='Themes' [target]='dlgTarget' [isModal]='isModalDialog' [animationSettings]='dialogAnimationSettings'
-    allowDragging="true" [visible]='dialogVisibility' showCloseIcon='true' [position]='themesdialogPosition' 
-    (close)='closeThemeDialog($event)' (created)='themeDialogCreated($event)'>
+    allowDragging="true" [visible]='dialogVisibility' showCloseIcon='true' [position]='themesdialogPosition' (close)='closeThemeDialog($event)'
+    (created)='themeDialogCreated($event)'>
     <ng-template #content>
         <div id="themeDialogContent">
             <div class="row">

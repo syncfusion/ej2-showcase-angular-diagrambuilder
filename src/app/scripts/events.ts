@@ -1,23 +1,20 @@
 import { SelectorViewModel } from './selector';
 import {
     IDraggingEventArgs, ISizeChangeEventArgs, IRotationEventArgs,
-    ISelectionChangeEventArgs, IDragEnterEventArgs, Diagram, Node, Connector, BpmnShapeModel, NodeModel, NodeConstraints,
-    ShapeAnnotationModel, TextAlign, HorizontalAlignment, VerticalAlignment, ConnectorModel,
-    Segments, ConnectorConstraints, DecoratorShapes, IHistoryChangeArgs, TextModel, TextStyleModel,
-    PathAnnotationModel, ShapeAnnotation, PathAnnotation, Alignment, AnnotationAlignment, PointModel, SelectorModel, BpmnShape,
-    DiagramBeforeMenuOpenEventArgs, IScrollChangeEventArgs
+    ISelectionChangeEventArgs, IDragEnterEventArgs, Diagram, Node, Connector, NodeModel,
+    ShapeAnnotationModel, TextAlign, HorizontalAlignment, VerticalAlignment, IHistoryChangeArgs, TextStyleModel,
+    PathAnnotationModel, ShapeAnnotation, PathAnnotation, AnnotationAlignment, SelectorModel,
+    DiagramBeforeMenuOpenEventArgs, IScrollChangeEventArgs, DiagramMenuEventArgs, ITextEditEventArgs
 } from '@syncfusion/ej2-diagrams';
-import { MenuEventArgs, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { ChangeEventArgs as DropDownChangeEventArgs, MultiSelectChangeEventArgs } from '@syncfusion/ej2-dropdowns';
-import { ChangeEventArgs as NumericChangeEventArgs, SliderChangeEventArgs, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
+import { ChangeEventArgs as NumericChangeEventArgs, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
 import { ChangeEventArgs as CheckBoxChangeEventArgs, ChangeArgs as ButtonChangeArgs } from '@syncfusion/ej2-buttons';
-import { ClickEventArgs as ToolbarClickEventArgs } from '@syncfusion/ej2-navigations';
+import { ClickEventArgs as ToolbarClickEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { MindMapUtilityMethods } from './mindmap';
 import { OrgChartUtilityMethods } from './orgchart';
 import { TooltipEventArgs } from '@syncfusion/ej2-popups';
-import { Ajax } from '@syncfusion/ej2-base';
 import { PageCreation } from '../scripts/pages';
-import { DropDownListComponent } from '@syncfusion/ej2-ng-dropdowns';
+import { DropDownListComponent } from '@syncfusion/ej2-angular-dropdowns';
 import { PaperSize } from './utilitymethods';
 
 export class DiagramClientSideEvents {
@@ -36,7 +33,7 @@ export class DiagramClientSideEvents {
         }
         if (args.state === 'Changed') {
             if (this.selectedItem.diagramType === 'MindMap') {
-                if (args.newValue.length === 1) {
+                if (args.newValue.length === 1 && diagram.selectedItems.nodes.length === 1) {
                     let node: Node = args.newValue[0] as Node;
                     diagram.selectedItems.userHandles[0].visible = false;
                     diagram.selectedItems.userHandles[1].visible = false;
@@ -56,6 +53,9 @@ export class DiagramClientSideEvents {
                             diagram.selectedItems.userHandles[2].side = 'Right';
                         }
                         this.selectedItem.utilityMethods.bindMindMapProperties(node, this.selectedItem);
+                    }
+                    if (node.addInfo && (node.addInfo as { [key: string]: Object }).level !== undefined) {
+                        this.selectedItem.mindmapSettings.levelType = 'Level' + (node.addInfo as { [key: string]: Object }).level;
                     }
                 }
             } else if (this.selectedItem.diagramType === 'OrgChart') {
@@ -179,12 +179,6 @@ export class DiagramClientSideEvents {
         }
     }
 
-    public collectionChange(args: ISelectionChangeEventArgs): void {
-        if (args.state === 'Changed') {
-            this.selectedItem.isModified = true;
-        }
-    }
-
     public nodePositionChange(args: IDraggingEventArgs): void {
         this.selectedItem.preventPropertyChange = true;
         this.selectedItem.nodeProperties.offsetX = (Math.round(args.newValue.offsetX * 100) / 100);
@@ -205,6 +199,14 @@ export class DiagramClientSideEvents {
         }
     }
 
+    public textEdit(args: ITextEditEventArgs): void {
+        if (this.selectedItem.diagramType === 'MindMap') {
+            let context: any = this;
+            setTimeout(() => { context.selectedItem.selectedDiagram.doLayout(); }, 10);
+        }
+        this.selectedItem.isModified = true;
+    };
+
     public scrollChange(args: IScrollChangeEventArgs): void {
         this.selectedItem.scrollSettings.currentZoom = (args.newValue.CurrentZoom * 100).toFixed() + '%';
     }
@@ -218,12 +220,33 @@ export class DiagramClientSideEvents {
         }
     }
 
-    public diagramContextMenuClick(args: MenuEventArgs): void {
+    public diagramContextMenuClick(args: DiagramMenuEventArgs): void {
         let diagram: Diagram = this.selectedItem.selectedDiagram;
         this.selectedItem.customContextMenu.updateBpmnShape(diagram, args.item);
         let text: string = args.item.text;
         if (text === 'Group' || text === 'Un Group' || text === 'Undo' || text === 'Redo' || text === 'Select All') {
             this.selectedItem.isModified = true;
+            if (this.selectedItem.diagramType === 'MindMap' || this.selectedItem.diagramType === 'OrgChart') {
+                if (text === 'Undo' || text === 'Redo') {
+                    args.cancel = true;
+                    if (text === 'Undo') {
+                        this.selectedItem.utilityMethods.undoRedoLayout(true, this.selectedItem);
+                    } else if (text === 'Redo') {
+                        this.selectedItem.utilityMethods.undoRedoLayout(false, this.selectedItem);
+                    }
+                }
+            }
+        }
+        if (this.selectedItem.diagramType === 'MindMap' || this.selectedItem.diagramType === 'OrgChart') {
+            if (text === 'Copy') {
+                this.selectedItem.utilityMethods.copyLayout(this.selectedItem);
+            } else if (text === 'Cut') {
+                args.cancel = true;
+                this.selectedItem.utilityMethods.cutLayout(this.selectedItem);
+            } else if (text === 'Paste') {
+                args.cancel = true;
+                this.selectedItem.utilityMethods.pasteLayout(this.selectedItem);
+            }
         }
     }
 
@@ -244,10 +267,10 @@ export class DiagramClientSideEvents {
         let toolbarContainer: HTMLDivElement = document.getElementsByClassName('db-toolbar-container')[0] as HTMLDivElement;
         toolbarContainer.classList.remove('db-undo');
         toolbarContainer.classList.remove('db-redo');
-        if (diagram.historyList.undoStack.length > 0) {
+        if (diagram.historyManager.undoStack.length > 0) {
             toolbarContainer.classList.add('db-undo');
         }
-        if (diagram.historyList.redoStack.length > 0) {
+        if (diagram.historyManager.redoStack.length > 0) {
             toolbarContainer.classList.add('db-redo');
         }
     }
@@ -521,7 +544,7 @@ export class MindMapPropertyBinding {
     public mindmapPatternChange(args: MouseEvent): void {
         let target: HTMLDivElement = args.target as HTMLDivElement;
         let diagram: Diagram = this.selectedItem.selectedDiagram;
-        diagram.historyList.startGroupAction();
+        diagram.historyManager.startGroupAction();
         for (let i: number = 0; i < this.selectedItem.selectedDiagram.nodes.length; i++) {
             let node: Node = this.selectedItem.selectedDiagram.nodes[i] as Node;
             if (node.id !== 'textNode') {
@@ -559,7 +582,7 @@ export class MindMapPropertyBinding {
             }
             this.selectedItem.selectedDiagram.dataBind();
         }
-        diagram.historyList.endGroupAction();
+        diagram.historyManager.endGroupAction();
         this.selectedItem.selectedDiagram.doLayout();
         this.selectedItem.isModified = true;
     }

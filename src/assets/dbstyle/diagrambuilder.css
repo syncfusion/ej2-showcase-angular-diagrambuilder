@@ -22,6 +22,10 @@ input, button, select, textarea {
 
 /* Top Header Customization */
 
+.e-symbolpalette {
+    display: block;
+}
+
 .header {
     position: relative;
     display: block;
@@ -75,6 +79,13 @@ input, button, select, textarea {
     color: #ffffff;
     font-size: 12px;
     height: 19px;
+    float: left;
+}
+
+.db-save-text {
+    left: 280px;
+    margin-top: 2px;
+    position: absolute;
 }
 
 #diagramName:hover {
@@ -168,6 +179,7 @@ input, button, select, textarea {
     font-weight: normal;
     float: right;
     width: calc(100% - 20px);
+    cursor: pointer;
 }
 
 .db-overview-parent {
@@ -355,6 +367,10 @@ input, button, select, textarea {
     width: 30px;
     border-right: 1px solid #CBCBCB;
     padding: 0px 6px;
+}
+
+.diagrambuilder-container.custom-diagram .db-palette-more-shapes-text {
+    display: none;
 }
 
 .diagrambuilder-container.custom-diagram .db-more-diagram-options-container {
@@ -1433,15 +1449,6 @@ input[type="color"]::-moz-color-swatch {
 
 /* More Shapes Dialog Customization */
 
-#moreShapesDialog .e-dlg-header-content,
-#moreShapesDialog .e-footer-content {
-    background: rgb(229, 229, 229);
-}
-
-#moreShapesDialog .e-dlg-header-content {
-    border: 1px solid rgb(192, 192, 192);
-}
-
 #moreShapesDialog .e-dlg-content {
     overflow: hidden;
     padding: 0px;
@@ -1451,8 +1458,30 @@ input[type="color"]::-moz-color-swatch {
     background-color: rgb(229, 229, 229);
 }
 
-#moreShapesDialog .e-listview .e-checkbox .e-checkbox-left {
-    margin: 6px 10px 0 0;
+#moreShapesDialog .e-listview .e-text-content.e-checkbox .e-list-text {
+    margin-top: 2px;
+    font-size: 12px;
+}
+
+#moreShapesDialog .temp-left-pane,
+#moreShapesDialog .temp-right-pane {
+    overflow: auto;
+    height: 380px;
+}
+
+#moreShapesDialog .e-checkbox-wrapper .e-frame, .e-css.e-checkbox-wrapper .e-frame {
+    height: 15px;
+    width: 15px;
+}
+
+#moreShapesDialog .e-footer-content {
+    border-top: 1px solid #D5D5D5;
+	padding: 12px;
+}
+
+#moreShapesDialog  .e-listview:not(.e-list-template) .e-list-item {
+    height: 30px;
+    line-height: 30px;
 }
 
 /* Layer Dialog Customization */
@@ -2032,6 +2061,8 @@ input.db-layer-edit {
     height: 424px;
 }
 
+
+
 #openTemplateDialog .e-dlg-content {
     padding: 0px;
 }
@@ -2272,6 +2303,12 @@ input:focus {
     border: 1px solid #D4D4D4;
 }
 
+#moreShapesDialog .e-listview .e-list-item.e-focused .e-checkbox-wrapper .e-frame.e-check, 
+#moreShapesDialog .e-listview .e-list-item.e-focused .e-css.e-checkbox-wrapper .e-frame.e-check {
+	background-color: #046AE5;
+    border-color: transparent;
+}
+
 .e-checkbox-wrapper .e-frame.e-check, .e-css.e-checkbox-wrapper .e-frame.e-check,
 .e-checkbox-wrapper .e-checkbox:focus + .e-frame.e-check, .e-css.e-checkbox-wrapper .e-checkbox:focus + .e-frame.e-check,
 .e-checkbox-wrapper:hover .e-frame.e-check, .e-css.e-checkbox-wrapper:hover .e-frame.e-check {
@@ -2315,6 +2352,10 @@ input.e-input::selection,
 
 .e-tooltip-wrap.e-popup.e-control.e-popup-open {
     pointer-events: none !important;
+}
+
+.e-control:focus, .e-control *:focus {
+    outline: none;
 }
 
 /* General Customization - End */

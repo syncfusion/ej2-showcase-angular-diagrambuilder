@@ -1,20 +1,19 @@
-
 /**
  *  Home page handler
  */
 
 import {
-    NodeModel, NodeConstraints, ShapeAnnotationModel, PointModel, ConnectorModel,
-    Diagram, ShapeAnnotation, ConnectorConstraints, Connector, Node, PathAnnotationModel, TextStyle, TextStyleModel, SelectorConstraints, TextAlign, HorizontalAlignment, VerticalAlignment
+    NodeModel, NodeConstraints, PointModel, ConnectorModel, LinearGradient,
+    Diagram, ConnectorConstraints, Node, TextStyle, TextStyleModel, SelectorConstraints, TextAlign, HorizontalAlignment, VerticalAlignment, Connector, ShapeAnnotationModel
 } from '@syncfusion/ej2-diagrams';
 import { SelectorViewModel } from './selector';
-import { Dialog } from '@syncfusion/ej2-ng-popups';
+import { Dialog } from '@syncfusion/ej2-angular-popups';
 import { MindMapUtilityMethods, MindMap } from './mindmap';
 import { OrgChartUtilityMethods, OrgChartData } from './orgchart';
-import { DropDownButton } from '@syncfusion/ej2-ng-splitbuttons';
-import { LinearGradient, Ajax } from '@syncfusion/ej2-base';
-import { Toolbar, ContextMenu } from '@syncfusion/ej2-ng-navigations';
+import { Ajax } from '@syncfusion/ej2-base';
+import { Toolbar, ContextMenu, MenuItemModel } from '@syncfusion/ej2-angular-navigations';
 import { PageCreation } from './pages';
+import { CommonKeyboardCommands } from './commoncommands';
 
 
 export class PaperSize {
@@ -213,10 +212,12 @@ export class UtilityMethods {
         }
     }
 
-    public hideElements(elementType: string, diagram?: Diagram): void {
+    public hideElements(elementType: string, diagram?: Diagram, diagramType?: string): void {
         let diagramContainer: HTMLElement = document.getElementsByClassName('diagrambuilder-container')[0] as HTMLElement;
         if (diagramContainer.classList.contains(elementType)) {
-            diagramContainer.classList.remove(elementType);
+            if (!(diagramType === 'mindmap-diagram' || diagramType === 'orgchart-diagram')) {
+                diagramContainer.classList.remove(elementType);
+            }
         } else {
             diagramContainer.classList.add(elementType);
         }
@@ -466,7 +467,7 @@ export class UtilityMethods {
     }
     public currentDiagramVisibility(diagramname: string, selectedItem: SelectorViewModel): void {
         if (diagramname === 'mindmap-diagram' || diagramname === 'orgchart-diagram') {
-            selectedItem.utilityMethods.hideElements('hide-palette');
+            selectedItem.utilityMethods.hideElements('hide-palette', null, diagramname);
 
             let diagramContainer: HTMLDivElement = document.getElementsByClassName('db-current-diagram-container')[0] as HTMLDivElement;
             diagramContainer.classList.add(diagramname);
@@ -572,10 +573,10 @@ export class UtilityMethods {
             if (selectedItem.pasteData.length === 0 && itemText === 'Paste') {
                 return true;
             }
-            if (itemText === 'Undo' && selectedItem.selectedDiagram.historyList.undoStack.length === 0) {
+            if (itemText === 'Undo' && selectedItem.selectedDiagram.historyManager.undoStack.length === 0) {
                 return true;
             }
-            if (itemText === 'Redo' && selectedItem.selectedDiagram.historyList.redoStack.length === 0) {
+            if (itemText === 'Redo' && selectedItem.selectedDiagram.historyManager.redoStack.length === 0) {
                 return true;
             }
             if (itemText === 'Select All') {
@@ -599,7 +600,7 @@ export class UtilityMethods {
         let selectedItems: Object[] = selectedItem.selectedDiagram.selectedItems.nodes;
         selectedItems = selectedItems.concat(selectedItem.selectedDiagram.selectedItems.connectors);
         for (let i: number = 0; i < contextMenu.items.length; i++) {
-            contextMenu.enableItems([contextMenu.items[i].text], false);
+            contextMenu.enableItems([(contextMenu.items[i] as MenuItemModel).text], false);
         }
         if (selectedItem.diagramType === 'GeneralDiagram') {
             if (selectedItems.length > 1) {
@@ -659,6 +660,102 @@ export class UtilityMethods {
         }
         return paperSize;
     }
+
+    public removeChild(selectedItem: SelectorViewModel): void {
+        let diagram: Diagram = selectedItem.selectedDiagram;
+        if (diagram.selectedItems.nodes.length > 0) {
+            selectedItem.preventPropertyChange = true;
+            diagram.historyManager.startGroupAction();
+            this.removeSubChild(diagram.selectedItems.nodes[0] as Node, selectedItem);
+            diagram.historyManager.endGroupAction();
+            diagram.doLayout();
+            selectedItem.preventPropertyChange = false;
+        }
+        selectedItem.isModified = true;
+    }
+
+    private removeSubChild(node: Node, selectedItem: SelectorViewModel): void {
+        let diagram: Diagram = selectedItem.selectedDiagram;
+        for (let i: number = node.outEdges.length - 1; i >= 0; i--) {
+            let connector: Connector = MindMapUtilityMethods.getConnector(diagram.connectors, node.outEdges[i]);
+            let childNode: Node = MindMapUtilityMethods.getNode(diagram.nodes, connector.targetID);
+            if (childNode != null && childNode.outEdges.length > 0) {
+                this.removeSubChild(childNode, selectedItem);
+            } else {
+                diagram.remove(childNode);
+            }
+        }
+        for (let j: number = node.inEdges.length - 1; j >= 0; j--) {
+            let connector: Connector = MindMapUtilityMethods.getConnector(diagram.connectors, node.inEdges[j]);
+            let childNode: Node = MindMapUtilityMethods.getNode(diagram.nodes, connector.sourceID);
+            let index: number = childNode.outEdges.indexOf(connector.id);
+            if (childNode.outEdges.length > 1 && index === 0) {
+                index = childNode.outEdges.length;
+            }
+            if (index > 0) {
+                let node1: string = childNode.outEdges[index - 1] as string;
+                let connector1: any = diagram.getObject(node1);
+                let node2: Node = MindMapUtilityMethods.getNode(diagram.nodes, connector1.targetID);
+                diagram.select([node2]);
+            } else {
+                diagram.select([childNode]);
+            }
+        }
+        diagram.remove(node);
+    }
+
+    public cutLayout(selectedItem: SelectorViewModel): void {
+        let diagram: Diagram = selectedItem.selectedDiagram;
+        if (diagram.selectedItems.nodes.length) {
+            selectedItem.utilityMethods.copyLayout(selectedItem);
+            selectedItem.utilityMethods.removeChild(selectedItem);
+            diagram.doLayout();
+            selectedItem.isModified = true;
+        }
+    }
+    public copyLayout(selectedItem: SelectorViewModel): void {
+        let diagram: Diagram = selectedItem.selectedDiagram;
+        let selectedNode: Node = diagram.selectedItems.nodes[0] as Node;
+        if (selectedNode.id !== 'rootNode') {
+            selectedItem.pasteData = CommonKeyboardCommands.cloneSelectedItemswithChildElements();
+        }
+    }
+    public pasteLayout(selectedItem: SelectorViewModel): void {
+        selectedItem.isCopyLayoutElement = true;
+        if (selectedItem.diagramType === 'MindMap') {
+            MindMapUtilityMethods.mindmapPaste();
+        } else if (selectedItem.diagramType === 'OrgChart') {
+            OrgChartUtilityMethods.orgchartPaste();
+        }
+        selectedItem.isCopyLayoutElement = false;
+        selectedItem.isModified = true;
+    }
+    public undoRedoLayout(isundo: boolean, selectedItem: SelectorViewModel): void {
+        let diagram: Diagram = selectedItem.selectedDiagram;
+        if (isundo) {
+            diagram.undo();
+        } else {
+            diagram.redo();
+        }
+        if (diagram.selectedItems.nodes.length === 0) {
+            this.updateSectionforNode(selectedItem);
+        }
+        diagram.doLayout();
+        selectedItem.isModified = true;
+    }
+
+    public updateSectionforNode(selectedItem: SelectorViewModel): void {
+        let diagram: Diagram = selectedItem.selectedDiagram;
+        for (let i: number = 0; i < diagram.nodes.length; i++) {
+            let newselection: Node = diagram.nodes[i] as Node;
+            if (newselection.id === 'rootNode') {
+                selectedItem.preventPropertyChange = true;
+                diagram.select([newselection]);
+                selectedItem.preventPropertyChange = false;
+            }
+        }
+    }
+
 
     public updateLayout(selectedItem: SelectorViewModel, bindBindingFields?: boolean, imageField?: boolean): void {
         for (let i: number = 0; i < selectedItem.selectedDiagram.nodes.length; i++) {
@@ -742,4 +839,5 @@ export class UtilityMethods {
         selectedItem.selectedDiagram.doLayout();
         selectedItem.isModified = true;
     }
+
 }

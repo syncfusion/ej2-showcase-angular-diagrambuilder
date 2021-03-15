@@ -1,6 +1,6 @@
 import { SelectorViewModel } from './selector';
 import { MindMapUtilityMethods } from './mindmap';
-import { Diagram, Node, Connector, FlowShapes, BasicShapes, FlowShapeModel, BasicShapeModel, DiagramConstraints, Segments } from '@syncfusion/ej2-diagrams';
+import { Diagram, Node, Connector, FlowShapes, BasicShapes, FlowShapeModel, BasicShapeModel, Segments, NodeConstraints } from '@syncfusion/ej2-diagrams';
 
 /**
  *  Theme handler
@@ -162,14 +162,16 @@ export class DiagramTheme {
 
     public applyOldStyle(): void {
         let diagram: Diagram = this.selectedItem.selectedDiagram;
-        diagram.historyList.startGroupAction();
+        diagram.historyManager.startGroupAction();
         for (let i: number = 0; i < this.nodeOldStyles.length; i++) {
             let themeStyle: { [key: string]: string } = this.nodeOldStyles[i];
             let node: Node = MindMapUtilityMethods.getNode(diagram.nodes, this.nodeOldStyles[i].name.toString());
             node.style.fill = themeStyle.fill.toString();
             node.style.strokeColor = themeStyle.border.toString();
             if (node.annotations.length > 0) {
-                node.annotations[0].style.color = themeStyle.fontColor;
+                if (!node.annotations[0].hyperlink) {
+                    node.annotations[0].style.color = themeStyle.fontColor;
+                }
             }
             diagram.dataBind();
         }
@@ -183,13 +185,14 @@ export class DiagramTheme {
             diagram.dataBind();
         }
         this.isThemeApplied = false;
-        diagram.historyList.endGroupAction();
+        diagram.historyManager.endGroupAction();
     }
 
     public themeClick(args: MouseEvent): void {
         let target: HTMLDivElement = args.target as HTMLDivElement;
         if (target.classList.contains('db-theme-style-div')) {
             let themeName: string = target.children[0].className.replace('db-theme-style ', '');
+            this.selectedItem.themeStyle = themeName;
             this.applyStyle(themeName);
             this.setNodeOldStyles();
             for (let i: number = 0; i < this.colorList.length; i++) {
@@ -201,6 +204,7 @@ export class DiagramTheme {
                     element.classList.add('db-theme-focus-style-div');
                 }
             }
+            this.selectedItem.isModified = true;
         }
     }
 
@@ -213,7 +217,9 @@ export class DiagramTheme {
                 let node: Node = nodes[i];
                 let style: { [key: string]: string } = { name: node.id, 'fill': node.style.fill, 'border': node.style.strokeColor };
                 if (node.annotations.length > 0) {
-                    style.fontColor = node.annotations[0].style.color;
+                    if (!node.annotations[0].hyperlink) {
+                        style.fontColor = node.annotations[0].style.color;
+                    }
                 }
                 this.nodeOldStyles.push(style);
             }
@@ -230,39 +236,66 @@ export class DiagramTheme {
     public applyStyle(themeName: string): void {
         let themeType: { [key: string]: Object } = this.getThemeStyle(themeName);
         let diagram: Diagram = this.selectedItem.selectedDiagram;
-        diagram.historyList.startGroupAction();
+        diagram.historyManager.startGroupAction();
         if (diagram.nodes.length > 0) {
             let nodes: Node[] = diagram.nodes as Node[];
             for (let i: number = 0; i < nodes.length; i++) {
                 let node: Node = nodes[i];
-                if (node.shape) {
-                    let shapeStyle: { [key: string]: string } = null;
-                    if (node.shape.type === 'Flow' || node.shape.type === 'Basic') {
-                        let shapeModel: FlowShapeModel | BasicShapeModel = node.shape as (FlowShapeModel | BasicShapeModel);
-                        shapeStyle = this.getShapeStyle(this.getShapeType(shapeModel.shape), themeType.themeStyle as { [key: string]: string }[]);
-                        if (shapeStyle) {
-                            node.style.fill = shapeStyle.fillColor;
-                            node.style.strokeColor = shapeStyle.borderColor;
-                            if (node.annotations.length > 0) {
-                                node.annotations[0].style.color = shapeStyle.textColor;
-                            }
-                            diagram.dataBind();
-                        }
-                    }
+                if (node.style.gradient) {
+                    node.style.gradient.type = 'None';
                 }
+                this.applyThemeStyleforElement(node, themeType);
             }
         }
         if (diagram.connectors.length > 0 && themeType) {
             let connectors: Connector[] = diagram.connectors as Connector[];
             for (let i: number = 0; i < connectors.length; i++) {
                 let connector: Connector = connectors[i];
-                connector.style.strokeColor = themeType.lineColor.toString();
-                connector.sourceDecorator.style.fill = connector.sourceDecorator.style.strokeColor = themeType.lineColor.toString();
-                connector.targetDecorator.style.fill = connector.targetDecorator.style.strokeColor = themeType.lineColor.toString();
-                connector.type = themeType.lineType as Segments;
+                this.applyThemeStyleforElement(connector, themeType);
             }
             diagram.dataBind();
         }
-        diagram.historyList.endGroupAction();
+        diagram.historyManager.endGroupAction();
     }
+
+    public applyThemeStyleforElement(element: object, themeName: { [key: string]: Object }): void {
+        let themeType: { [key: string]: Object };
+        if (!themeName) {
+            themeType = this.getThemeStyle(this.selectedItem.themeStyle);
+        } else {
+            themeType = themeName;
+        }
+        let diagram: Diagram = this.selectedItem.selectedDiagram;
+        diagram.historyManager.startGroupAction();
+        if (element instanceof Node) {
+            let node: Node = element;
+            if (node.shape) {
+                let shapeStyle: { [key: string]: string } = null;
+                if (node.shape.type === 'Flow' || node.shape.type === 'Basic') {
+                    let shapeModel: FlowShapeModel | BasicShapeModel = node.shape as (FlowShapeModel | BasicShapeModel);
+                    shapeStyle = this.getShapeStyle(this.getShapeType(shapeModel.shape), themeType.themeStyle as { [key: string]: string }[]);
+                    if (shapeStyle) {
+                        node.style.fill = shapeStyle.fillColor;
+                        node.style.strokeColor = shapeStyle.borderColor;
+                        if (node.annotations.length > 0) {
+                            if (!(node.annotations[0].hyperlink && node.annotations[0].hyperlink.link)) {
+                                node.annotations[0].style.color = shapeStyle.textColor;
+                            }
+                        }
+                        diagram.dataBind();
+                    }
+                }
+            }
+        } else if (element instanceof Connector) {
+            let connector: Connector = element;
+            connector.style.strokeColor = themeType.lineColor.toString();
+            connector.sourceDecorator.style.fill = connector.sourceDecorator.style.strokeColor = themeType.lineColor.toString();
+            connector.targetDecorator.style.fill = connector.targetDecorator.style.strokeColor = themeType.lineColor.toString();
+            connector.type = themeType.lineType as Segments;
+            diagram.dataBind();
+
+        }
+        diagram.historyManager.endGroupAction();
+    }
+
 }

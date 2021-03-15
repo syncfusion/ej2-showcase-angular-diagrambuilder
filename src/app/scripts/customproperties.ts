@@ -5,7 +5,7 @@
 import { NodeModel, Diagram, NodeConstraints, Node, ShapeAnnotationModel } from '@syncfusion/ej2-diagrams';
 import { Button, CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { SelectorViewModel } from './selector';
-import { Dialog } from '@syncfusion/ej2-ng-popups';
+import { Dialog } from '@syncfusion/ej2-angular-popups';
 
 
 export class CustomProperties {
