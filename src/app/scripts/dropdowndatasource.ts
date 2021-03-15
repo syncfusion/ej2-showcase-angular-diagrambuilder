@@ -141,8 +141,8 @@ export class DropDownDataSources {
     ];
 
     public gradientDirections: { [key: string]: Object }[] = [
-        { text: 'South', value: 'South' }, { text: 'North', value: 'North' },
-        { text: 'East', value: 'East' }, { text: 'West', value: 'West' }
+        { text: 'BottomToTop', value: 'BottomToTop' }, { text: 'TopToBottom', value: 'TopToBottom' },
+        { text: 'RightToLeft', value: 'RightToLeft' }, { text: 'LeftToRight', value: 'LeftToRight' }
     ];
 
     public drawShapesList: ItemModel[] = [
@@ -183,6 +183,16 @@ export class DropDownDataSources {
         { text: 'Tabloid (279 mm x 432 mm)', value: 'Tabloid' }, { text: 'A3 (297 mm x 420 mm)', value: 'A3' },
         { text: 'A4 (210 mm x 297 mm)', value: 'A4' }, { text: 'A5 (148 mm x 210 mm)', value: 'A5' },
         { text: 'A6 (105 mm x 148 mm)', value: 'A6' }, { text: 'Custom', value: 'Custom' },
+    ];
+
+    public listViewData: { [key: string]: Object }[] = [
+        { text: 'Flow', id: 'flowShapes', checked: true },
+        { text: 'Basic', id: 'basicShapes', checked: true },
+        { text: 'BPMN', id: 'bpmnShapes', checked: true },
+        { text: 'Connectors', id: 'connectorsShapes', checked: true },
+        { text: 'Electrical', id: 'electricalShapes', checked: false },
+        { text: 'Network', id: 'networkShapes', checked: false },
+        { text: 'Floorplan', id: 'floorShapes', checked: false },
     ];
 
 }

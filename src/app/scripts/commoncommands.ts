@@ -1,6 +1,6 @@
 import { SelectorViewModel } from './selector';
 import { PageCreation } from './pages';
-import { Diagram, CommandModel, Keys, KeyModifiers, NodeModel, ConnectorModel } from '@syncfusion/ej2-diagrams';
+import { Diagram, CommandModel, Keys, KeyModifiers, NodeModel, ConnectorModel, Node, Connector } from '@syncfusion/ej2-diagrams';
 
 export abstract class CommonKeyboardCommands {
     public static selectedItem: SelectorViewModel;
@@ -104,4 +104,53 @@ export abstract class CommonKeyboardCommands {
     public static duplicateSelectedItems(): void {
         this.selectedItem.selectedDiagram.paste(this.cloneSelectedItems());
     }
+
+    public static cloneSelectedItemswithChildElements(): (NodeModel | ConnectorModel)[] {
+        return this.cloneChild();
+    }
+    public static cloneChild(): any {
+        let diagram: Diagram = this.selectedItem.selectedDiagram;
+        let selectedItems1: (NodeModel | ConnectorModel)[] = [];
+        if (diagram.selectedItems.nodes.length > 0) {
+            let node: Node = diagram.selectedItems.nodes[0] as Node;
+            if (node.addInfo) {
+                (node.addInfo as { [key: string]: Object }).isFirstNode = true;
+            } else {
+                node.addInfo = { isFirstNode: true };
+            }
+            selectedItems1.push(node);
+            selectedItems1 = this.cloneSubChildSubChild(node, selectedItems1);
+        }
+        return selectedItems1;
+    }
+
+    private static cloneSubChildSubChild(node: Node, select: any): any {
+        let diagram: Diagram = this.selectedItem.selectedDiagram;
+        let select1: (NodeModel | ConnectorModel)[] = select;
+        for (let i: number = node.outEdges.length - 1; i >= 0; i--) {
+            let connector: Connector = diagram.getObject(node.outEdges[i]) as Connector;
+            let childNode: Node = diagram.getObject(connector.targetID)  as Node;
+            select1.push(connector);
+            select1.push(childNode);
+            if (childNode.outEdges.length > 0) {
+                this.cloneSubChildSubChild(childNode, select1);
+            }
+        }
+        return this.sortCollection(select1);
+    }
+    public static sortCollection(select1: any): any {
+        let select: (NodeModel | ConnectorModel)[] = [];
+        for (let i: number = select1.length - 1; i >= 0; i--) {
+            if (select1[i] instanceof Node) {
+                select.push(select1[i]);
+            }
+        }
+        for (let i: number = select1.length - 1; i >= 0; i--) {
+            if (select1[i] instanceof Connector) {
+                select.push(select1[i]);
+            }
+        }
+        return select;
+    }
+
 }
