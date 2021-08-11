@@ -7,10 +7,11 @@ import {
 } from '@syncfusion/ej2-diagrams';
 import { UtilityMethods } from './utilitymethods';
 import { CustomContextMenuItems } from './customcontextmenuitems';
-import { Input } from '@angular/core';
+import { Input, Injectable } from '@angular/core';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { MindMapUtilityMethods } from './mindmap';
 
+@Injectable()
 export class NodeProperties {
     private m_offsetX: number = 0;
     public get offsetX(): number {
@@ -249,6 +250,7 @@ export class NodeProperties {
     }
 }
 
+@Injectable()
 export class ConnectorProperties {
 
     private m_lineColor: string = '#ffffff';
@@ -410,6 +412,7 @@ export class ConnectorProperties {
     }
 }
 
+@Injectable()
 export class TextProperties {
 
     private m_textPosition: string = '';
@@ -520,6 +523,7 @@ export class TextProperties {
 
 }
 
+@Injectable()
 export class ExportSettings {
     private m_fileName: string = 'Diagram';
     public get fileName(): string {
@@ -552,6 +556,7 @@ export class ExportSettings {
     }
 }
 
+@Injectable()
 export class PrintSettings {
     private m_region: string = 'PageSettings';
     public get region(): string {
@@ -632,6 +637,7 @@ export class PrintSettings {
 
 }
 
+@Injectable()
 export class PageSettings {
     public pageWidth: number = 1056;
     public pageHeight: number = 816;
@@ -643,10 +649,12 @@ export class PageSettings {
     public pageBreaks: boolean = false;
 }
 
+@Injectable()
 export class ScrollSettings {
     public currentZoom: string = '100%';
 }
 
+@Injectable()
 export class MindMapSettings {
     private m_levelType: string = 'Level0';
     public get levelType(): string {
@@ -791,6 +799,7 @@ export class MindMapSettings {
     }
 }
 
+@Injectable()
 export class OrgDataSettings {
     public dataSourceColumns: { [key: string]: Object }[] = [];
     public id: string = '';
@@ -804,6 +813,7 @@ export class OrgDataSettings {
     public buttonContent: string = 'Download Example CSV';
 }
 
+@Injectable()
 export class SelectorViewModel {
 
 
