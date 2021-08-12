@@ -1363,7 +1363,7 @@ export class HomeComponent implements AfterViewInit {
     public setImage(event: ProgressEvent): void {
         //(document.getElementsByClassName('sb-content-overlay')[0] as HTMLDivElement).style.display = 'none';
         let node: NodeModel = this.selectedItem.selectedDiagram.selectedItems.nodes[0];
-        node.shape = { type: 'Image', source: (event.target as FileReader).result, align: 'None' };
+        node.shape = { type: 'Image', source: (event.target as FileReader).result as string, align: 'None' };
     }
 
     public loadDiagram(event: ProgressEvent): void {
