@@ -1,17 +1,14 @@
 /**
  * Selector Handler
  */
-import {
-    Diagram, NodeModel, Node, NodeConstraints,
-    ConnectorModel, Connector, Segments, DecoratorShapes, ConnectorConstraints, TextStyleModel
-} from '@syncfusion/ej2-diagrams';
+import { Diagram, DiagramRegions, FileFormats, NodeModel, Node, NodeConstraints, ConnectorModel, Connector, Segments, DecoratorShapes, ConnectorConstraints, TextStyleModel } from '@syncfusion/ej2-diagrams';
 import { UtilityMethods } from './utilitymethods';
 import { CustomContextMenuItems } from './customcontextmenuitems';
-import { Input, Injectable } from '@angular/core';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Observer, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { CustomDiagram } from './userhandles';
 import { MindMapUtilityMethods } from './mindmap';
 
-@Injectable()
 export class NodeProperties {
     private m_offsetX: number = 0;
     public get offsetX(): number {
@@ -179,7 +176,7 @@ export class NodeProperties {
         }
     }
 
-    private m_gradientDirection: string = 'BottomToTop';
+    private m_gradientDirection: string = 'South';
     public get gradientDirection(): string {
         return this.m_gradientDirection;
     }
@@ -229,11 +226,11 @@ export class NodeProperties {
     public getGradientDirectionValue(direction: string): { [key: string]: number } {
         let gradientValue: { [key: string]: number } = {};
         let x1: number = 0, x2: number = 0, y1: number = 0, y2: number = 0;
-        if (direction === 'LeftToRight') {
+        if (direction === 'West') {
             x1 = 100;
-        } else if (direction === 'BottomToTop') {
+        } else if (direction === 'South') {
             y2 = 100;
-        } else if (direction === 'RightToLeft') {
+        } else if (direction === 'East') {
             x2 = 100;
         } else {
             y1 = 100;
@@ -250,7 +247,6 @@ export class NodeProperties {
     }
 }
 
-@Injectable()
 export class ConnectorProperties {
 
     private m_lineColor: string = '#ffffff';
@@ -412,7 +408,6 @@ export class ConnectorProperties {
     }
 }
 
-@Injectable()
 export class TextProperties {
 
     private m_textPosition: string = '';
@@ -523,7 +518,6 @@ export class TextProperties {
 
 }
 
-@Injectable()
 export class ExportSettings {
     private m_fileName: string = 'Diagram';
     public get fileName(): string {
@@ -556,7 +550,6 @@ export class ExportSettings {
     }
 }
 
-@Injectable()
 export class PrintSettings {
     private m_region: string = 'PageSettings';
     public get region(): string {
@@ -637,7 +630,6 @@ export class PrintSettings {
 
 }
 
-@Injectable()
 export class PageSettings {
     public pageWidth: number = 1056;
     public pageHeight: number = 816;
@@ -649,12 +641,10 @@ export class PageSettings {
     public pageBreaks: boolean = false;
 }
 
-@Injectable()
 export class ScrollSettings {
     public currentZoom: string = '100%';
 }
 
-@Injectable()
 export class MindMapSettings {
     private m_levelType: string = 'Level0';
     public get levelType(): string {
@@ -799,7 +789,6 @@ export class MindMapSettings {
     }
 }
 
-@Injectable()
 export class OrgDataSettings {
     public dataSourceColumns: { [key: string]: Object }[] = [];
     public id: string = '';
@@ -813,14 +802,10 @@ export class OrgDataSettings {
     public buttonContent: string = 'Download Example CSV';
 }
 
-@Injectable()
 export class SelectorViewModel {
 
 
-    public selectedDiagram: Diagram;
-    public isCopyLayoutElement: boolean = false;
-    public themeStyle: string;
-    public pastedFirstItem: Node;
+    public selectedDiagram: CustomDiagram;
     public currentDiagramName: string = '';
     public preventPropertyChange: boolean = false;
     public diagramType: string;
@@ -866,8 +851,22 @@ export class SelectorViewModel {
                     let selectedNodes: NodeModel[] = this.selectedDiagram.selectedItems.nodes;
                     for (let i: number = 0; i < selectedNodes.length; i++) {
                         let node: Node = selectedNodes[i] as Node;
-                        let propertyName1: string = args.propertyName.toString().toLowerCase();
-                        switch (propertyName1) {
+                        switch (args.propertyName.toString().toLowerCase()) {
+                            case 'fillcolor':
+                                node.style.fill = this.getColor(this.nodeProperties.fillColor);
+                                if (this.nodeProperties.gradient) {
+                                    this.nodeProperties.getGradient(node);
+                                }
+                                break;
+                            case 'strokecolor':
+                                node.style.strokeColor = this.getColor(this.nodeProperties.strokeColor);
+                                break;
+                            case 'strokewidth':
+                                node.style.strokeWidth = this.nodeProperties.strokeWidth;
+                                break;
+                            case 'strokestyle':
+                                node.style.strokeDashArray = this.nodeProperties.strokeStyle;
+                                break;
                             case 'offsetx':
                                 node.offsetX = this.nodeProperties.offsetX;
                                 break;
@@ -883,16 +882,20 @@ export class SelectorViewModel {
                             case 'rotateangle':
                                 node.rotateAngle = this.nodeProperties.rotateAngle;
                                 break;
+                            case 'opacity':
+                                node.style.opacity = this.nodeProperties.opacity / 100;
+                                this.nodeProperties.opacityText = this.nodeProperties.opacity + '%';
+                                break;
+                            case 'gradient':
+                                if (!this.nodeProperties.gradient) {
+                                    node.style.gradient.type = 'None';
+                                } else {
+                                    this.nodeProperties.getGradient(node);
+                                }
+                                break;
                             case 'aspectratio':
                                 node.constraints = node.constraints ^ NodeConstraints.AspectRatio;
                                 break;
-                        }
-                        if (!node.children) {
-                            this.applyNodeStyle(propertyName1, node);
-                        } else {
-                            for (let j: number = 0; j < node.children.length; j++) {
-                                this.applyNodeStyle(propertyName1, diagram.getObject(node.children[j]) as Node);
-                            }
                         }
                     }
                     this.isModified = true;
@@ -919,38 +922,6 @@ export class SelectorViewModel {
                 }
                 diagram.dataBind();
             }
-        }
-    }
-
-    private applyNodeStyle(propertyName: string, node: Node): void {
-        let addInfo: any = node.addInfo || {};
-        switch (propertyName) {
-            case 'fillcolor':
-                node.style.fill = this.getColor(this.nodeProperties.fillColor);
-                if (this.nodeProperties.gradient) {
-                    this.nodeProperties.getGradient(node);
-                }
-                break;
-            case 'strokecolor':
-                node.style.strokeColor = this.getColor(this.nodeProperties.strokeColor);
-                break;
-            case 'strokewidth':
-                node.style.strokeWidth = this.nodeProperties.strokeWidth;
-                break;
-            case 'strokestyle':
-                node.style.strokeDashArray = this.nodeProperties.strokeStyle;
-                break;
-            case 'opacity':
-                node.style.opacity = this.nodeProperties.opacity / 100;
-                this.nodeProperties.opacityText = this.nodeProperties.opacity + '%';
-                break;
-            case 'gradient':
-                if (!this.nodeProperties.gradient) {
-                    node.style.gradient.type = 'None';
-                } else {
-                    this.nodeProperties.getGradient(node);
-                }
-                break;
         }
     }
 
@@ -1151,3 +1122,4 @@ export class SelectorViewModel {
         return colorName;
     }
 }
+
