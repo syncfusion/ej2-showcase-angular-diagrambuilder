@@ -3,8 +3,9 @@
  */
 
 import { SelectorViewModel } from './selector';
-import { Button } from '@syncfusion/ej2-buttons';
+import { Button, CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { LayerModel } from '@syncfusion/ej2-diagrams/src/diagram/diagram/layer-model';
+import { Diagram } from '@syncfusion/ej2-diagrams';
 import { Dialog } from '@syncfusion/ej2-angular-popups';
 
 
@@ -84,7 +85,6 @@ export class DiagramBuilderLayer {
                 cssClass: layer.id
             });
             let visibleElement: HTMLButtonElement = visibleElements[layers.length - i];
-            visibleElement.title = layer.visible ? 'Visible' : 'Invisible';
             visibleLayer.appendTo(visibleElement);
             visibleElement.onclick = this.changeLayerVisibility.bind(this);
             if (!layer.visible) {
@@ -97,12 +97,7 @@ export class DiagramBuilderLayer {
                 cssClass: layer.id,
             });
             lockLayer.appendTo(lockElement);
-            lockElement.title = layer.lock ? 'Lock' : 'Unlock';
             lockElement.onclick = this.changeLayerSelection.bind(this);
-            if (layer.lock) {
-                lockElement.parentElement.className = 'db-layer-content-btn db-layer-invisible';
-            }
-
         }
 
         let layerNameElements: HTMLCollectionOf<HTMLDivElement> =
@@ -171,22 +166,19 @@ export class DiagramBuilderLayer {
 
     public changeLayerSelection(args: MouseEvent): void {
         let element: any = args.target;
-        let layerName: string = element.className.replace('db-layer-lock e-control e-btn e-lib ', '').replace(' e-icon-btn', '').replace(' e-ripple', '');
+        let layerName: string = element.className.replace('db-layer-lock e-control e-btn ', '').replace(' e-icon-btn', '').replace(' e-ripple', '');
         let layer: LayerModel = this.findLayer(layerName);
         layer.lock = !layer.lock;
         element.ej2_instances[0].iconCss = layer.lock ? 'sf-icon-Lock' : 'sf-icon-Unlock';
-        element.title = layer.lock ? 'Lock' : 'Unlock';
-        element.parentElement.className = layer.lock ? 'db-layer-content-btn db-layer-invisible' : 'db-layer-content-btn';
         this.selectedItem.selectedDiagram.dataBind();
     }
 
     public changeLayerVisibility(args: MouseEvent): void {
         let element: any = args.target;
-        let layerName: string = element.className.replace('db-layer-visible e-control e-btn e-lib ', '').replace(' e-icon-btn', '').replace(' e-ripple', '');
+        let layerName: string = element.className.replace('db-layer-visible e-control e-btn ', '').replace(' e-icon-btn', '').replace(' e-ripple', '');
         let layer: LayerModel = this.findLayer(layerName);
         layer.visible = !layer.visible;
         element.ej2_instances[0].iconCss = layer.visible ? 'sf-icon-View' : 'sf-icon-Invisible';
-        element.title = layer.visible ? 'Visible' : 'Invisible';
         element.parentElement.className = layer.visible ? 'db-layer-content-btn' : 'db-layer-content-btn db-layer-invisible';
         this.selectedItem.selectedDiagram.dataBind();
     }
@@ -222,7 +214,6 @@ export class DiagramBuilderLayer {
             let inputElement: HTMLInputElement = target.children[1] as HTMLInputElement;
             inputElement.focus();
             inputElement.value = target.children[0].innerHTML;
-            inputElement.select();
             this.isEditing = true;
         }
     }

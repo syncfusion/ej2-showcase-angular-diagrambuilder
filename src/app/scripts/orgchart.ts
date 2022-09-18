@@ -1,13 +1,13 @@
 import {
     Diagram, CommandManagerModel, Keys, NodeModel, ConnectorModel, Node,
     Rect, Connector, DiagramTools, SelectorConstraints, SnapConstraints,
-    NodeConstraints, ShapeAnnotationModel, PointModel, KeyModifiers, UserHandleModel, TreeInfo, SubTreeOrientation,
-    SubTreeAlignments, DiagramConstraints, cloneObject, ConnectorConstraints,
-    ICollectionChangeEventArgs, INodeInfo, IDropEventArgs
+    NodeConstraints, ShapeAnnotationModel, PointModel, KeyModifiers, UserHandleModel, TreeInfo, SubTreeOrientation, SubTreeAlignments, DiagramConstraints, cloneObject, ConnectorConstraints
 } from '@syncfusion/ej2-diagrams';
 import { SelectorViewModel } from './selector';
 import { DataManager } from '@syncfusion/ej2-data';
+import { DropDownList, MultiSelect } from '@syncfusion/ej2-angular-dropdowns';
 import { Dialog } from '@syncfusion/ej2-angular-popups';
+import { CheckBox } from '@syncfusion/ej2-angular-buttons';
 import { MindMapUtilityMethods } from './mindmap';
 import { CustomProperties } from './customproperties';
 import { CommonKeyboardCommands } from './commoncommands';
@@ -73,19 +73,8 @@ export class OrgChartData {
             {
                 gesture: { key: Keys.Space }, canExecute: this.canExecute,
                 execute: this.spaceOrgChart.bind(this), name: 'expandcollapse'
-            },
-            {
-                gesture: { key: Keys.X, keyModifiers: KeyModifiers.Control }, canExecute: this.canExecute,
-                execute: this.cutOrgChart.bind(this), name: 'cutObject'
-            },
-            {
-                gesture: { key: Keys.C, keyModifiers: KeyModifiers.Control }, canExecute: this.canExecute,
-                execute: this.copyOrgChart.bind(this), name: 'copyObject'
-            },
-            {
-                gesture: { key: Keys.V, keyModifiers: KeyModifiers.Control }, canExecute: this.canExecute,
-                execute: this.pasteOrgChart.bind(this), name: 'pasteObject'
             }
+
             ]
         };
         commandManager.commands = CommonKeyboardCommands.addCommonCommands(commandManager.commands);
@@ -98,21 +87,17 @@ export class OrgChartData {
         // diagram.dataBind();
     }
     private undoOrgChart(): void {
-        this.selectedItem.utilityMethods.undoRedoLayout(true, this.selectedItem);
+        let diagram: Diagram = this.selectedItem.selectedDiagram;
+        diagram.undo();
+        diagram.doLayout();
+        this.selectedItem.isModified = true;
     }
 
     private redoOrgChart(): void {
-        this.selectedItem.utilityMethods.undoRedoLayout(false, this.selectedItem);
-    }
-
-    private cutOrgChart(): void {
-        this.selectedItem.utilityMethods.cutLayout(this.selectedItem);
-    }
-    public copyOrgChart(): void {
-        this.selectedItem.utilityMethods.copyLayout(this.selectedItem);
-    }
-    public pasteOrgChart(): void {
-        this.selectedItem.utilityMethods.pasteLayout(this.selectedItem);
+        let diagram: Diagram = this.selectedItem.selectedDiagram;
+        diagram.redo();
+        diagram.doLayout();
+        this.selectedItem.isModified = true;
     }
 
     private addChild(args: { [key: string]: Object }): void {
@@ -158,7 +143,7 @@ export class OrgChartData {
     }
 
     private removeChild(args: { [key: string]: Object }): void {
-        this.selectedItem.utilityMethods.removeChild(this.selectedItem);
+        OrgChartUtilityMethods.removeChild();
     }
 
     private navigateLeftChild(): void {
@@ -297,8 +282,6 @@ export class OrgChartData {
         } else {
             diagram.commandManager = this.getCommandSettings();
         }
-        diagram.contextMenuSettings.show = false;
-        diagram.dataBind();
     }
 
     public doLayoutSettings(diagram: Diagram): void {
@@ -307,12 +290,12 @@ export class OrgChartData {
             horizontalSpacing: 50, verticalSpacing: 50,
             getLayoutInfo: OrgChartUtilityMethods.getLayoutInfo.bind(OrgChartUtilityMethods)
         };
-        diagram.selectedItems = { userHandles: OrgChartUtilityMethods.handle, constraints: SelectorConstraints.UserHandle };
+        diagram.selectedItems = { userHandles: OrgChartUtilityMethods.handle, constraints: SelectorConstraints.All };
         diagram.tool = DiagramTools.SingleSelect | DiagramTools.ZoomPan;
         diagram.pageSettings = { width: null, height: null };
         diagram.commandManager = this.getCommandSettings();
         diagram.snapSettings.constraints = diagram.snapSettings.constraints & ~SnapConstraints.ShowLines;
-        diagram.selectedItems.constraints = SelectorConstraints.UserHandle;
+        diagram.selectedItems.constraints = SelectorConstraints.All;
         diagram.dataBind();
     }
 
@@ -339,33 +322,6 @@ export abstract class OrgChartUtilityMethods {
 
     public static customProperty: CustomProperties;
 
-    public static orgchartPaste(): void {
-        let diagram: Diagram = this.selectedItem.selectedDiagram;
-        let selectedNode: Node = diagram.selectedItems.nodes[0] as Node;
-        let selectedelement: Node;
-        let mindmapData: { [key: string]: Object };
-        let orientation: string;
-        diagram.startGroupAction();
-        if (this.selectedItem.pasteData.length > 0) {
-            diagram.paste(this.selectedItem.pasteData);
-            selectedelement = this.selectedItem.pastedFirstItem;
-
-            let connector: ConnectorModel = {
-                id: 'connector' + this.selectedItem.randomIdGenerator(), sourceID: selectedNode.id,
-                targetID: selectedelement.id, type: 'Orthogonal',
-                style: { strokeColor: 'black', strokeWidth: 2 }
-            };
-            connector.constraints = ConnectorConstraints.PointerEvents | ConnectorConstraints.Select | ConnectorConstraints.Delete;
-            diagram.add(connector);
-            diagram.clearSelection();
-            diagram.select([selectedelement]);
-            diagram.doLayout();
-            diagram.bringIntoView(diagram.nodes[diagram.nodes.length - 1].wrapper.bounds);
-        }
-        this.selectedItem.isModified = true;
-        diagram.endGroupAction();
-    }
-
     public static showUploadDialog(): void {
         this.uploadDialog.show();
     }
@@ -373,11 +329,10 @@ export abstract class OrgChartUtilityMethods {
     public static readFile(event: ProgressEvent): void {
         this.orgChart = new OrgChartData(this.selectedItem);
         this.columnsList = [];
-        let resultString: string = (event.target as FileReader).result.toString();
         if (this.fileType === 'csv') {
-            this.orgDataSource = OrgChartUtilityMethods.convertCsvToJson(resultString);
+            this.orgDataSource = OrgChartUtilityMethods.convertCsvToJson((event.target as FileReader).result.toString());
         } else if (this.fileType === 'json') {
-            this.orgDataSource = JSON.parse(resultString);
+            this.orgDataSource = JSON.parse((event.target as FileReader).result.toString());
             for (let i: number = 0; i < this.orgDataSource.length; i++) {
                 let attr: { [key: string]: Object } = this.orgDataSource[i] as { [key: string]: Object };
                 for (let prop in attr) {
@@ -388,7 +343,7 @@ export abstract class OrgChartUtilityMethods {
             }
         } else {
             let parser: DOMParser = new DOMParser();
-            let xmlDom: XMLDocument = parser.parseFromString(resultString, 'text/xml');
+            let xmlDom: XMLDocument = parser.parseFromString((event.target as FileReader).result.toString(), 'text/xml');
             let element: Element = xmlDom.children[0];
             this.orgDataSource = this.convertXmlToJson(element);
         }
@@ -414,6 +369,33 @@ export abstract class OrgChartUtilityMethods {
         this.customPropertyDialog.cssClass = 'db-org-diagram';
         this.customPropertyDialog.dataBind();
         this.customPropertyDialog.show();
+    }
+
+    public static removeChild(): void {
+        let diagram: Diagram = this.selectedItem.selectedDiagram;
+        if (diagram.selectedItems.nodes.length > 0) {
+            this.selectedItem.preventPropertyChange = true;
+            diagram.historyManager.startGroupAction();
+            this.removeSubChild(diagram.selectedItems.nodes[0] as Node);
+            diagram.historyManager.endGroupAction();
+            diagram.doLayout();
+            this.selectedItem.preventPropertyChange = false;
+        }
+        this.selectedItem.isModified = true;
+    }
+
+    private static removeSubChild(node: Node): void {
+        let diagram: Diagram = this.selectedItem.selectedDiagram;
+        for (let i: number = node.outEdges.length - 1; i >= 0; i--) {
+            let connector: Connector = MindMapUtilityMethods.getConnector(diagram.connectors, node.outEdges[i]);
+            let childNode: Node = MindMapUtilityMethods.getNode(diagram.nodes, connector.targetID);
+            if (childNode.outEdges.length > 0) {
+                this.removeSubChild(childNode);
+            } else {
+                diagram.remove(childNode);
+            }
+        }
+        diagram.remove(node);
     }
 
     public static getParentChildValues(): { [key: string]: string[] } {
@@ -443,7 +425,7 @@ export abstract class OrgChartUtilityMethods {
             style: { fill: parentNode.style.fill, strokeColor: parentNode.style.strokeColor, strokeWidth: parentNode.style.strokeWidth },
             offsetX: 200, offsetY: 200
         };
-        node.constraints = NodeConstraints.Default | NodeConstraints.AllowDrop;
+        node.constraints = NodeConstraints.Default & ~NodeConstraints.Drag;
         if (parentNode.shape && parentNode.shape.type === 'Image') {
             node.shape = { type: 'Image', source: './assets/dbstyle/orgchart_images/blank-male.jpg', align: 'XMinYMin', scale: 'Meet' };
         } else {
@@ -453,7 +435,7 @@ export abstract class OrgChartUtilityMethods {
         let addInfo: any = {};
         for (let i: number = 0; i < keys.length; i++) {
             let key: string = keys[i];
-            let keyValue: any = cloneObject((parentNode.addInfo as { [key: string]: Object })[key]);
+            let keyValue: any = (parentNode.addInfo as { [key: string]: Object })[key];
             addInfo[key] = keyValue;
             if (key !== 'Name') {
                 addInfo[key].value = '';
@@ -515,8 +497,6 @@ export abstract class OrgChartUtilityMethods {
                 'Image URL': { value: '', type: 'imageField', checked: false }
             },
         };
-        node.constraints = NodeConstraints.Default & ~NodeConstraints.Delete;
-        node.constraints |= NodeConstraints.AllowDrop;
         diagram.add(node);
         let node1: NodeModel = {
             id: 'textNode', width: 400, height: 300, offsetX: diagram.scrollSettings.viewPortWidth - 200,
@@ -639,12 +619,12 @@ export abstract class OrgChartUtilityMethods {
             type: 'OrganizationalChart',
             getLayoutInfo: this.getLayoutInfo.bind(this)
         };
-        diagram.selectedItems = { userHandles: OrgChartUtilityMethods.handle, constraints: SelectorConstraints.UserHandle };
+        diagram.selectedItems = { userHandles: OrgChartUtilityMethods.handle, constraints: SelectorConstraints.All };
         diagram.pageSettings = { width: null, height: null };
         //diagram.tool = DiagramTools.SingleSelect | DiagramTools.ZoomPan;
         diagram.commandManager = this.orgChart.getCommandSettings();
         diagram.snapSettings.constraints = diagram.snapSettings.constraints & ~SnapConstraints.ShowLines;
-        diagram.selectedItems.constraints = SelectorConstraints.UserHandle;
+        diagram.selectedItems.constraints = SelectorConstraints.All;
         diagram.dataBind();
         diagram.dataBind();
         this.uploadDialog.hide();
@@ -735,7 +715,7 @@ export abstract class OrgChartUtilityMethods {
                     addInfo1[additionalFields[i]] = { 'value': data[additionalFields[i]], 'type': 'bindingField', 'checked': false };
                 }
                 node.tooltip = { content: content, position: 'BottomCenter', relativeMode: 'Object' };
-                node.constraints = NodeConstraints.Default | NodeConstraints.Tooltip;
+                node.constraints = NodeConstraints.Default;
             }
             node.style.fill = '#88C65C';
             node.style.strokeColor = '#88C65C';

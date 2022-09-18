@@ -1,29 +1,27 @@
 import { Component, ViewEncapsulation, ViewChild, AfterViewInit } from '@angular/core';
-import { formatUnit, createElement, closest, Ajax } from '@syncfusion/ej2-base';
+import { formatUnit, createElement, closest } from '@syncfusion/ej2-base';
 import { UploaderComponent } from '@syncfusion/ej2-angular-inputs';
 import {
     ItemModel as ToolbarItemModel, OpenCloseMenuEventArgs, MenuEventArgs as ContextMenuEventArgs,
     ClickEventArgs, ToolbarComponent, MenuAnimationSettingsModel
 } from '@syncfusion/ej2-angular-navigations';
 import { BeforeOpenCloseMenuEventArgs, MenuEventArgs, DropDownButtonComponent } from '@syncfusion/ej2-angular-splitbuttons';
-import { DialogComponent, PositionDataModel, TooltipEventArgs, Position } from '@syncfusion/ej2-angular-popups';
+import { DialogComponent, PositionDataModel, BeforeOpenEventArgs, TooltipEventArgs, Position } from '@syncfusion/ej2-angular-popups';
 import { AnimationSettingsModel, TooltipComponent } from '@syncfusion/ej2-angular-popups';
 import { FieldSettingsModel, DropDownListComponent } from '@syncfusion/ej2-angular-dropdowns';
 import { Button, ButtonComponent } from '@syncfusion/ej2-angular-buttons';
 import {
-    DiagramComponent, Diagram, NodeModel, ConnectorModel, Node, Connector, NodeConstraints, ShapeAnnotationModel,
+    Diagram, NodeModel, ConnectorModel, Node, Connector, NodeConstraints, ShapeAnnotationModel,
     ConnectorConstraints, DiagramTools, SnapConstraints, AlignmentOptions,
     UndoRedo, DiagramContextMenu, Snapping, BpmnDiagrams, HierarchicalTree, PrintAndExport,
-    MindMap as MindMapTree, ZoomOptions, DataBinding, Overview, DiagramRegions,
-    ConnectorBridging, LayoutAnimation, UserHandleModel, FileFormats,
-    SymbolPalette, CommandManagerModel, Keys, KeyModifiers, SelectorConstraints,
-    ICollectionChangeEventArgs, DiagramAction, SnapSettingsModel, PageSettingsModel, ScrollSettingsModel,
-    SelectorModel, ContextMenuSettingsModel, IDropEventArgs, SymbolPaletteComponent
-} from '@syncfusion/ej2-angular-diagrams';
+    MindMap as MindMapTree, ZoomOptions, DataBinding, Overview, DiagramRegions, ConnectorBridging, 
+    LayoutAnimation, UserHandleModel, FileFormats, SymbolPalette, CommandManagerModel, Keys, KeyModifiers, SelectorConstraints, ConnectorEditing
+} from '@syncfusion/ej2-diagrams';
 import { PageCreation } from '../scripts/pages';
 import { SelectorViewModel } from '../scripts/selector';
-import { CustomTool } from '../scripts/userhandles';
-import { OrgChartUtilityMethods, OrgChartData } from '../scripts/orgchart';
+import { generatePalette } from '../scripts/palettes';
+import { CustomDiagram } from '../scripts/userhandles';
+import { OrgChartUtilityMethods } from '../scripts/orgchart';
 import { CustomProperties } from '../scripts/customproperties';
 import { DiagramBuilderLayer } from '../scripts/layers';
 import { DropDownDataSources } from '../scripts/dropdowndatasource';
@@ -32,12 +30,9 @@ import { DiagramTheme } from '../scripts/themes';
 import { PaperSize } from '../scripts/utilitymethods';
 import { CommonKeyboardCommands } from '../scripts/commoncommands';
 import { DiagramClientSideEvents, DiagramPropertyBinding, MindMapPropertyBinding, OrgChartPropertyBinding } from '../scripts/events';
-import { Palettes } from '../scripts/palettes';
-import { MindMap, MindMapUtilityMethods } from '../scripts/mindmap';
-import { ListViewComponent, FieldsMapping, SelectedCollection, SelectEventArgs } from '@syncfusion/ej2-angular-lists';
 
 Diagram.Inject(UndoRedo, DiagramContextMenu, Snapping, DataBinding);
-Diagram.Inject(PrintAndExport, BpmnDiagrams, HierarchicalTree, MindMapTree, ConnectorBridging, LayoutAnimation);
+Diagram.Inject(PrintAndExport, BpmnDiagrams, HierarchicalTree, MindMapTree, ConnectorBridging, LayoutAnimation,ConnectorEditing);
 SymbolPalette.Inject(BpmnDiagrams);
 
 @Component({
@@ -47,12 +42,6 @@ SymbolPalette.Inject(BpmnDiagrams);
 })
 
 export class HomeComponent implements AfterViewInit {
-
-    @ViewChild('diagram')
-    public diagram: DiagramComponent;
-
-    @ViewChild('symbolpalette')
-    public symbolpalette: SymbolPaletteComponent;
 
     @ViewChild('printDialog')
     public printDialog: DialogComponent;
@@ -87,9 +76,6 @@ export class HomeComponent implements AfterViewInit {
     @ViewChild('deleteConfirmationDialog')
     public deleteConfirmationDialog: DialogComponent;
 
-    @ViewChild('moreShapesDialog')
-    public moreShapesDialog: DialogComponent;
-
     @ViewChild('btnHelpMenu')
     public btnHelpMenu: DropDownButtonComponent;
 
@@ -114,9 +100,6 @@ export class HomeComponent implements AfterViewInit {
     @ViewChild('ddlTextPosition')
     public ddlTextPosition: DropDownListComponent;
 
-    @ViewChild('moreShapesList')
-    public moreShapesList: ListViewComponent;
-
     /* ContextMenu Animation Settings */
     public animationSettings: MenuAnimationSettingsModel = { effect: 'None' };
 
@@ -131,7 +114,6 @@ export class HomeComponent implements AfterViewInit {
     public printingButtons: Object[] = this.getDialogButtons('print');
     public saveButtons: Object[] = this.getDialogButtons('save');
     public tooltipButtons: Object[] = this.getDialogButtons('tooltip');
-    public moreShapesButtons: Object[] = this.getDialogButtons('moreshapes');
     public hyperlinkButtons: Object[] = this.getDialogButtons('hyperlink');
     public deleteConfirmationButtons: Object[] = this.getDialogButtons('deleteconfirmation');
     public uploadButtons: Object[] = this.getUploadButtons();
@@ -139,8 +121,6 @@ export class HomeComponent implements AfterViewInit {
     public dialogVisibility: boolean = false;
     public isModalDialog: boolean = false;
     public themesdialogPosition: PositionDataModel = { X: 'right', Y: 112 };
-
-    public listViewFields: FieldsMapping = { isChecked: 'checked' };
 
     /* Dialog Members End */
 
@@ -163,7 +143,6 @@ export class HomeComponent implements AfterViewInit {
     public diagramPropertyBinding: DiagramPropertyBinding = new DiagramPropertyBinding(this.selectedItem, this.page);
     public mindmapPropertyBinding: MindMapPropertyBinding = new MindMapPropertyBinding(this.selectedItem);
     public orgChartPropertyBinding: OrgChartPropertyBinding = new OrgChartPropertyBinding(this.selectedItem);
-    public palettes: Palettes = new Palettes();
     public downloadFile: DownloadExampleFiles;
     public diagramThemes: DiagramTheme = new DiagramTheme(this.selectedItem);
 
@@ -173,7 +152,7 @@ export class HomeComponent implements AfterViewInit {
     public overview: Overview;
 
     public ngAfterViewInit(): void {
-
+        generatePalette();
         this.generateDiagram();
         this.page.addNewPage();
 
@@ -199,7 +178,6 @@ export class HomeComponent implements AfterViewInit {
 
         let context: any = this;
         setTimeout(() => { context.loadPage(); }, 2000);
-        setInterval(() => { context.savePage(); }, 2000);
 
         window.onbeforeunload = this.closeWindow.bind(this);
     }
@@ -212,51 +190,6 @@ export class HomeComponent implements AfterViewInit {
         }
         return null;
     }
-
-    public collectionChange(args: ICollectionChangeEventArgs): void {
-        if (this.selectedItem.diagramType === 'GeneralDiagram') {
-            if (args.state === 'Changed' && args.type === 'Addition' &&
-                args.cause === (DiagramAction.Render | DiagramAction.ToolAction)) {
-                if (this.selectedItem.themeStyle !== undefined && this.selectedItem.themeStyle !== null) {
-                    this.diagramThemes.applyThemeStyleforElement(args.element, null);
-                }
-                this.selectedItem.isModified = true;
-            }
-        } else {
-            if (args.state === 'Changed' && this.selectedItem.isCopyLayoutElement) {
-                if (args.element instanceof Node) {
-                    if (args.element.addInfo) {
-                        if ((args.element.addInfo as { [key: string]: Object }).isFirstNode) {
-                            this.selectedItem.pastedFirstItem = args.element;
-                        }
-                    }
-                }
-                this.selectedItem.isModified = true;
-            }
-        }
-    }
-
-    public drop(args: IDropEventArgs): void {
-        if (this.selectedItem.diagramType === 'OrgChart') {
-            let diagram: Diagram = this.selectedItem.selectedDiagram;
-            let source: object = args.source;
-            let sourceNode: Node;
-            if (source instanceof Diagram) {
-                if (diagram.selectedItems.nodes.length === 1) {
-                    sourceNode = diagram.selectedItems.nodes[0] as Node;
-                }
-            } else if (source instanceof Node) {
-                sourceNode = source;
-            }
-            if (sourceNode !== null && sourceNode.id !== 'rootNode' && args.target instanceof Node) {
-                let targetNode: Node = args.target;
-                let connector: Connector = diagram.getObject(sourceNode.inEdges[0]) as Connector;
-                connector.sourceID = targetNode.id;
-                diagram.dataBind();
-            }
-            diagram.doLayout();
-        }
-    };
 
     public themeDialogCreated(args: Object): void {
         let themeDialogContent: HTMLElement = document.getElementById('themeDialogContent');
@@ -275,17 +208,11 @@ export class HomeComponent implements AfterViewInit {
         let element: HTMLInputElement = (document.getElementById('diagramEditable') as HTMLInputElement);
         element.value = document.getElementById('diagramName').innerHTML;
         element.focus();
-        element.select();
-    }
-
-    public moreShapesClick(args: MouseEvent): void {
-        this.moreShapesDialog.show();
     }
 
     public diagramNameChange(args: MouseEvent): void {
         document.getElementById('diagramName').innerHTML = (document.getElementById('diagramEditable') as HTMLInputElement).value;
         document.getElementsByClassName('db-diagram-name-container')[0].classList.remove('db-edit-name');
-        this.selectedItem.exportSettings.fileName = document.getElementById('diagramName').innerHTML;
     }
 
     public diagramNameKeyDown(args: KeyboardEvent): void {
@@ -303,50 +230,9 @@ export class HomeComponent implements AfterViewInit {
         this.overview.appendTo('#overview');
         document.getElementById('overviewspan').onclick = this.overviewSpanClick.bind(this);
         document.getElementsByClassName('sidebar')[0].className = 'sidebar';
-        if (window.location.search.length === 0) {
-            this.selectedItem.uniqueId = this.selectedItem.randomIdGenerator();
-            (document.getElementsByClassName('sb-content-overlay')[0] as HTMLDivElement).style.display = 'none';
-            this.openTemplateDialog.show();
-            this.openTemplateDialog.content = this.selectedItem.utilityMethods.getDefaultDiagramTemplates1(this.selectedItem);
-            this.diagram.layers[0].addInfo = { 'name': 'Layer0' }
-        } else {
-            // let dataValue: string = window.location.search.split('?id=')[1];
-            // let ajax: Ajax = new Ajax('https://ej2services.syncfusion.com/development/web-services/api/Diagram/LoadJson', 'POST', true, 'application/json');
-            // let datastring: string = JSON.stringify({
-            //     DiagramName: dataValue,
-            // });
-            // ajax.send(datastring).then();
-            // ajax.onSuccess = (data: string): void => {
-            //     this.selectedItem.preventSelectionChange = true;
-            //     this.page.loadPage(data);
-            //     this.selectedItem.isTemplateLoad = true;
-            //     if (this.selectedItem.diagramType === 'MindMap') {
-            //         MindMapUtilityMethods.selectedItem = this.selectedItem;
-            //         let mindMapObject: MindMap = new MindMap(this.selectedItem);
-            //         mindMapObject.createMindMap(false);
-            //     } else if (this.selectedItem.diagramType === 'OrgChart') {
-            //         OrgChartUtilityMethods.selectedItem = this.selectedItem;
-            //         let orgChartObject: OrgChartData = new OrgChartData(this.selectedItem);
-            //         orgChartObject.createOrgChart(false);
-            //     }
-            //     this.page.loadDiagramSettings();
-            //     this.selectedItem.isTemplateLoad = false;
-            //     this.selectedItem.preventSelectionChange = false;
-            //     (document.getElementsByClassName('sb-content-overlay')[0] as HTMLDivElement).style.display = 'none';
-            // };
-            // ajax.onFailure = (args: string): void => {
-            //     (document.getElementsByClassName('sb-content-overlay')[0] as HTMLDivElement).style.display = 'none';
-            // };
-            // ajax.onError = (args: Event): Object => {
-            //     (document.getElementsByClassName('sb-content-overlay')[0] as HTMLDivElement).style.display = 'none';
-            //     return null;
-            // };
-        }
-        this.selectedItem.exportSettings.fileName = document.getElementById('diagramName').innerHTML;
-    }
-
-    public savePage(): void {
-        // this.page.loadJson();
+        (document.getElementsByClassName('sb-content-overlay')[0] as HTMLDivElement).style.display = 'none';
+        this.openTemplateDialog.show();
+        this.selectedItem.utilityMethods.getDefaultDiagramTemplates1(this.selectedItem);
     }
 
 
@@ -416,14 +302,9 @@ export class HomeComponent implements AfterViewInit {
     }
 
     public arrangeMenuBeforeOpen(args: BeforeOpenCloseMenuEventArgs): void {
-        this.updateMenuStyle(args)
+        (args.element.children[0] as HTMLElement).style.display = 'block';
         if (args.event && closest(args.event.target as Element, '.e-dropdown-btn') !== null) {
             args.cancel = true;
-        }
-    }
-    private updateMenuStyle(args: BeforeOpenCloseMenuEventArgs): void {
-        for (let i: number = 0; i < args.element.children.length; i++) {
-            (args.element.children[i] as HTMLElement).style.display = 'block';
         }
     }
 
@@ -488,28 +369,11 @@ export class HomeComponent implements AfterViewInit {
                     click: this.btnDeleteConfirmation.bind(this), buttonModel: { content: 'Ok', cssClass: 'e-flat e-db-primary', isPrimary: true }
                 });
                 break;
-            case 'moreshapes':
-                buttons.push({
-                    click: this.btnMoreShapes.bind(this), buttonModel: { content: 'Apply', cssClass: 'e-flat e-db-primary', isPrimary: true }
-                });
-                break;
         }
         buttons.push({
             click: this.btnCancelClick.bind(this), buttonModel: { content: 'Cancel', cssClass: 'e-flat', isPrimary: true }
         });
         return buttons;
-    }
-
-    private btnMoreShapes(args: MouseEvent): void {
-        let listSelectedItem: SelectedCollection = this.moreShapesList.getSelectedItems() as SelectedCollection;
-        if (listSelectedItem.text.length > 0) {
-            this.symbolpalette.palettes = this.palettes.getPalettes(listSelectedItem.text as string[]);
-            this.moreShapesDialog.hide();
-        }
-    }
-
-    private listViewSelectionChange(args: SelectEventArgs): void {
-        (document.getElementById('shapePreviewImage') as HTMLImageElement).src = './assets/dbstyle/shapes_images/' + args.text.toLowerCase() + '.png';
     }
 
     private btnDeleteConfirmation(args: MouseEvent): void {
@@ -588,9 +452,6 @@ export class HomeComponent implements AfterViewInit {
                 this.fileUploadDialog.hide();
                 OrgChartUtilityMethods.isUploadSuccess = false;
                 break;
-            case 'moreShapesDialog':
-                this.moreShapesDialog.hide();
-                break;
         }
     }
 
@@ -599,7 +460,6 @@ export class HomeComponent implements AfterViewInit {
         if (node.annotations.length > 0) {
             node.annotations[0].hyperlink.link = (document.getElementById('hyperlink') as HTMLInputElement).value;
             node.annotations[0].hyperlink.content = (document.getElementById('hyperlinkText') as HTMLInputElement).value;
-            this.applyToolTipforHyperlink(node);
             this.selectedItem.selectedDiagram.dataBind();
         } else {
             let annotation: ShapeAnnotationModel = {
@@ -609,18 +469,8 @@ export class HomeComponent implements AfterViewInit {
                 }
             };
             this.selectedItem.selectedDiagram.addLabels(node, [annotation]);
-            this.applyToolTipforHyperlink(node);
-            this.selectedItem.selectedDiagram.dataBind();
         }
         this.hyperlinkDialog.hide();
-    }
-
-    private applyToolTipforHyperlink(node: Node): void {
-        node.constraints = NodeConstraints.Default & ~NodeConstraints.InheritTooltip | NodeConstraints.Tooltip;
-        node.tooltip = {
-            content: node.annotations[0].hyperlink.link, relativeMode: 'Object',
-            position: 'TopCenter', showTipPointer: true,
-        };
     }
 
     private btnTooltip(): void {
@@ -720,6 +570,9 @@ export class HomeComponent implements AfterViewInit {
         } else if (args.item.text === 'Bezier') {
             diagram.drawingObject = { type: 'Bezier', style: { strokeWidth: 2 } };
         }
+        // else if(args.item.text === 'FreeHand'){
+        //     diagram.drawingObject = { type: 'Freehand', style: { strokeWidth: 2 } };
+        // }
         diagram.tool = DiagramTools.ContinuousDraw;
         diagram.clearSelection();
         this.removeSelectedToolbarItem();
@@ -775,6 +628,8 @@ export class HomeComponent implements AfterViewInit {
                     break;
                 case '25%':
                     zoom.zoomFactor = (0.25 / currentZoom) - 1;
+                    break;
+                case 'custom':
                     break;
             }
             this.selectedItem.scrollSettings.currentZoom = args.item.text;
@@ -1073,46 +928,55 @@ export class HomeComponent implements AfterViewInit {
         }
     }
 
-    public snapSettings: SnapSettingsModel = {
-        horizontalGridlines: {
-            lineIntervals: [1, 9, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75],
-            lineColor: '#EEEEEE'
-        },
-        verticalGridlines: {
-            lineIntervals: [1, 9, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75],
-            lineColor: '#EEEEEE'
-        },
-        constraints: (SnapConstraints.All & ~SnapConstraints.SnapToLines)
-    };
-
-    public pageSettings: PageSettingsModel = {
-        background: { color: 'white' }, width: 816, height: 1056, multiplePage: true, margin: { left: 5, top: 5 },
-        orientation: 'Landscape'
-    };
-
-    public scrollSettings: ScrollSettingsModel = { canAutoScroll: true, scrollLimit: 'Infinity', minZoom: 0.25, maxZoom: 30 };
-    public selectedItems: SelectorModel = { constraints: SelectorConstraints.All & ~SelectorConstraints.ToolTip };
-    public commandManager: CommandManagerModel = this.getCommandSettings();
-    public contextMenuSettings: ContextMenuSettingsModel = {
-        show: true,
-        items: this.selectedItem.customContextMenu.items
-    };
-
-    public customTool: CustomTool = new CustomTool(this.selectedItem);
-    public getCustomTool: Function = this.customTool.getTool.bind(this);
 
     private generateDiagram(): void {
-        this.selectedItem.selectedDiagram = this.diagram;
-        this.selectedItem.diagramType = 'GeneralDiagram';
-        //this.diagram.layers[0].addInfo = { 'name': 'Layer0' };
+        let diagram: CustomDiagram = new CustomDiagram({
+            width: '100%', height: '100%',
+            snapSettings: {
+                horizontalGridlines: {
+                    lineIntervals: [1, 9, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75],
+                    lineColor: '#EEEEEE'
+                },
+                verticalGridlines: {
+                    lineIntervals: [1, 9, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75],
+                    lineColor: '#EEEEEE'
+                },
+                constraints: (SnapConstraints.All & ~SnapConstraints.SnapToLines)
+            },
+            
+            pageSettings: {
+                background: { color: 'white' }, width: 816, height: 1056, multiplePage: true, margin: { left: 5, top: 5 },
+                orientation: 'Landscape'
+            },
+            scrollSettings: { canAutoScroll: true, scrollLimit: 'Infinity', minZoom: 0.25, maxZoom: 30 },
+            selectedItems: { constraints: SelectorConstraints.All & ~SelectorConstraints.ToolTip },
+            getNodeDefaults: this.setNodeDefaults,
+            getConnectorDefaults: this.setConnectorDefaults,
+            commandManager: this.getCommandSettings(),
+            backgroundColor: 'transparent',
+            selectionChange: this.diagramEvents.selectionChange.bind(this.diagramEvents),
+            positionChange: this.diagramEvents.nodePositionChange.bind(this.diagramEvents),
+            sizeChange: this.diagramEvents.nodeSizeChange.bind(this.diagramEvents),
+            rotateChange: this.diagramEvents.nodeRotationChange.bind(this.diagramEvents),
+            collectionChange: this.diagramEvents.collectionChange.bind(this),
+            contextMenuOpen: this.diagramEvents.diagramContextMenuOpen.bind(this.diagramEvents),
+            contextMenuClick: this.diagramEvents.diagramContextMenuClick.bind(this.diagramEvents),
+            dragEnter: this.diagramEvents.dragEnter.bind(this.diagramEvents),
+            historyChange: this.diagramEvents.historyChange.bind(this.diagramEvents),
+            scrollChange: this.diagramEvents.scrollChange.bind(this.diagramEvents),
+            contextMenuSettings: {
+                show: true,
+                items: this.selectedItem.customContextMenu.items
+            },
+            serializationSettings: { preventDefaults: true}
+        });
+        diagram.appendTo('#diagram');
+        this.selectedItem.selectedDiagram = diagram;
+        diagram.selectedItem = this.selectedItem;
+        diagram.layers[0].addInfo = { 'name': 'Layer0' };
     }
 
     public setNodeDefaults(node: Node, diagram: Diagram): NodeModel {
-        if (node.style) {
-            if (node.style.fill === 'transparent' && !node.children) {
-                node.style.fill = 'white';
-            }
-        }
         let node1: NodeModel = {
             style: { strokeWidth: 2 }
         };
@@ -1122,7 +986,7 @@ export class HomeComponent implements AfterViewInit {
     public setConnectorDefaults(connector: Connector, diagram: Diagram): ConnectorModel {
         let connector1: ConnectorModel = {
             annotations: [
-                { content: '', style: { fill: '#ffffff' } }
+                { content: '', style: { fill: 'transparent' } }
             ],
             style: { strokeWidth: 2 }
         };
@@ -1178,11 +1042,11 @@ export class HomeComponent implements AfterViewInit {
             case 'redo':
                 this.redo();
                 break;
-            case 'zoomin(ctrl++)':
+            case 'zoomin':
                 diagram.zoomTo({ type: 'ZoomIn', zoomFactor: 0.2 });
                 this.selectedItem.scrollSettings.currentZoom = (diagram.scrollSettings.currentZoom * 100).toFixed() + '%';
                 break;
-            case 'zoomout(ctrl+-)':
+            case 'zoomout':
                 diagram.zoomTo({ type: 'ZoomOut', zoomFactor: 0.2 });
                 this.selectedItem.scrollSettings.currentZoom = (diagram.scrollSettings.currentZoom * 100).toFixed() + '%';
                 break;
@@ -1252,7 +1116,25 @@ export class HomeComponent implements AfterViewInit {
             }
         }
     }
-
+    public segmentEditingChange(args:any):void{
+        let diagram: Diagram = this.selectedItem.selectedDiagram;
+       if(diagram.selectedItems.connectors){
+         if(args.checked == true){
+           for(let i=0;i<diagram.selectedItems.connectors.length;i++){
+             let connector: ConnectorModel= diagram.selectedItems.connectors[i];
+             connector.constraints = ConnectorConstraints.DragSegmentThumb | ConnectorConstraints.Default ;
+           }
+         }     
+       else
+       {
+         for(let i=0;i<diagram.selectedItems.connectors.length;i++){
+         let connector: ConnectorModel = diagram.selectedItems.connectors[i];
+         connector.constraints = ConnectorConstraints.Default & ~(ConnectorConstraints.DragSegmentThumb);
+         }
+       }
+       diagram.dataBind();
+     }
+   }
     public showColorPicker(propertyName: string, toolbarName: string): void {
         let fillElement: HTMLButtonElement =
             document.getElementById(propertyName).parentElement.getElementsByClassName('e-dropdown-btn')[0] as HTMLButtonElement;
@@ -1363,7 +1245,7 @@ export class HomeComponent implements AfterViewInit {
     public setImage(event: ProgressEvent): void {
         //(document.getElementsByClassName('sb-content-overlay')[0] as HTMLDivElement).style.display = 'none';
         let node: NodeModel = this.selectedItem.selectedDiagram.selectedItems.nodes[0];
-        node.shape = { type: 'Image', source: (event.target as FileReader).result as string, align: 'None' };
+        node.shape = { type: 'Image', source: (event.target as FileReader).result, align: 'None' };
     }
 
     public loadDiagram(event: ProgressEvent): void {

@@ -11,12 +11,19 @@ export class DropDownDataSources {
     public helpMenuItems: ItemModel[] = this.getHelpMenuItems();
 
     public getFileMenuItems(): ItemModel[] {
+        // let menuItems: ItemModel[] = [
+        //     { text: 'New' }, { text: 'Open' }, { separator: true },
+        //     { text: 'Save', iconCss: 'sf-icon-Save' }, { text: 'Save As' },
+        //     { text: 'Export', iconCss: 'sf-icon-Export' }, { separator: true },
+        //     { text: 'Print', iconCss: 'sf-icon-Print' }
+        // ];
         let menuItems: ItemModel[] = [
-            { text: 'New' }, { text: 'Open' }, { separator: true },
-            { text: 'Save', iconCss: 'sf-icon-Save' }, { text: 'Save As' },
-            // { text: 'Rename' }, { separator: true },
-            { text: 'Export', iconCss: 'sf-icon-Export' }, { separator: true },
-            { text: 'Print', iconCss: 'sf-icon-Print' }
+           {text: 'New'},
+           { text: 'Open' },
+           {text: 'Save', iconCss: 'sf-icon-Save'},
+           {text: 'Save As'},
+           {text: 'Export', iconCss: 'sf-icon-Export'},
+           {text: 'Print', iconCss: 'sf-icon-Print'}
         ];
         return menuItems;
     }
@@ -141,8 +148,8 @@ export class DropDownDataSources {
     ];
 
     public gradientDirections: { [key: string]: Object }[] = [
-        { text: 'BottomToTop', value: 'BottomToTop' }, { text: 'TopToBottom', value: 'TopToBottom' },
-        { text: 'RightToLeft', value: 'RightToLeft' }, { text: 'LeftToRight', value: 'LeftToRight' }
+        { text: 'South', value: 'South' }, { text: 'North', value: 'North' },
+        { text: 'East', value: 'East' }, { text: 'West', value: 'West' }
     ];
 
     public drawShapesList: ItemModel[] = [
@@ -154,7 +161,8 @@ export class DropDownDataSources {
     public drawConnectorsList: ItemModel[] = [
         { iconCss: 'sf-icon-StraightLine', text: 'Straight Line' },
         { iconCss: 'sf-icon-ConnectorMode', text: 'Orthogonal Line' },
-        { iconCss: 'sf-icon-BeizerLine', text: 'Bezier' }
+        { iconCss: 'sf-icon-BeizerLine', text: 'Bezier' },
+        { iconCss : 'sf-icon-BeizerLine',text :'FreeHand'}
     ];
 
     public orderCommandsList: ItemModel[] = [
@@ -183,16 +191,6 @@ export class DropDownDataSources {
         { text: 'Tabloid (279 mm x 432 mm)', value: 'Tabloid' }, { text: 'A3 (297 mm x 420 mm)', value: 'A3' },
         { text: 'A4 (210 mm x 297 mm)', value: 'A4' }, { text: 'A5 (148 mm x 210 mm)', value: 'A5' },
         { text: 'A6 (105 mm x 148 mm)', value: 'A6' }, { text: 'Custom', value: 'Custom' },
-    ];
-
-    public listViewData: { [key: string]: Object }[] = [
-        { text: 'Flow', id: 'flowShapes', checked: true },
-        { text: 'Basic', id: 'basicShapes', checked: true },
-        { text: 'BPMN', id: 'bpmnShapes', checked: true },
-        { text: 'Connectors', id: 'connectorsShapes', checked: true },
-        { text: 'Electrical', id: 'electricalShapes', checked: false },
-        { text: 'Network', id: 'networkShapes', checked: false },
-        { text: 'Floorplan', id: 'floorShapes', checked: false },
     ];
 
 }

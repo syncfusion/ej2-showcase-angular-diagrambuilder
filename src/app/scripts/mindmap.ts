@@ -5,11 +5,11 @@
 import {
     Diagram, CommandManagerModel, Keys, NodeModel, ConnectorModel, Node, Rect,
     Connector, DiagramTools, ShapeAnnotationModel, ConnectorConstraints, SnapConstraints,
-    SelectorConstraints, UserHandleModel, KeyModifiers, DiagramConstraints, NodeConstraints, INodeInfo
+    SelectorConstraints, UserHandleModel, ShapeAnnotation, KeyModifiers, DiagramConstraints, IClickEventArgs, NodeConstraints, ITextEditEventArgs
 } from '@syncfusion/ej2-diagrams';
 import { SelectorViewModel } from './selector';
 import { CommonKeyboardCommands } from './commoncommands';
-import { DropDownList } from '@syncfusion/ej2-dropdowns';
+
 
 export class MindMap {
 
@@ -79,16 +79,13 @@ export class MindMap {
                 execute: this.redoMindMap.bind(this), name: 'redo'
             },
             {
-                gesture: { key: Keys.X, keyModifiers: KeyModifiers.Control }, canExecute: this.canExecute,
-                execute: this.cutMindMap.bind(this), name: 'cutObject'
+                gesture: { key: Keys.X, keyModifiers: KeyModifiers.Control }, canExecute: this.preventExecute, name: 'cutObject'
             },
             {
-                gesture: { key: Keys.C, keyModifiers: KeyModifiers.Control }, canExecute: this.canExecute,
-                execute: this.copyMindMap.bind(this), name: 'copyObject'
+                gesture: { key: Keys.C, keyModifiers: KeyModifiers.Control }, canExecute: this.preventExecute, name: 'copyObject'
             },
             {
-                gesture: { key: Keys.V, keyModifiers: KeyModifiers.Control }, canExecute: this.canExecute,
-                execute: this.pasteMindMap.bind(this), name: 'pasteObject'
+                gesture: { key: Keys.V, keyModifiers: KeyModifiers.Control }, canExecute: this.preventExecute, name: 'pasteObject'
             }
             ]
         };
@@ -105,21 +102,15 @@ export class MindMap {
     }
 
     private undoMindMap(): void {
-        this.selectedItem.utilityMethods.undoRedoLayout(true, this.selectedItem);
+        let diagram: Diagram = this.selectedItem.selectedDiagram;
+        diagram.undo();
+        diagram.doLayout();
     }
 
     private redoMindMap(): void {
-        this.selectedItem.utilityMethods.undoRedoLayout(false, this.selectedItem);
-    }
-
-    private cutMindMap(): void {
-        this.selectedItem.utilityMethods.cutLayout(this.selectedItem);
-    }
-    public copyMindMap(): void {
-        this.selectedItem.utilityMethods.copyLayout(this.selectedItem);
-    }
-    public pasteMindMap(): void {
-        this.selectedItem.utilityMethods.pasteLayout(this.selectedItem);
+        let diagram: Diagram = this.selectedItem.selectedDiagram;
+        diagram.redo();
+        diagram.doLayout();
     }
 
     private addChild(args: { [key: string]: Object }): void {
@@ -139,7 +130,7 @@ export class MindMap {
     }
 
     private removeChild(args: { [key: string]: Object }): void {
-        this.selectedItem.utilityMethods.removeChild(this.selectedItem);
+        MindMapUtilityMethods.removeChild();
     }
 
     private navigateLeftChild(args: Object): void {
@@ -284,6 +275,11 @@ export class MindMap {
         let diagram: Diagram = this.selectedItem.selectedDiagram;
         this.selectedItem.utilityMethods.currentDiagramVisibility('mindmap-diagram', this.selectedItem);
         diagram.updateViewPort();
+        diagram.textEdit = (args: ITextEditEventArgs) => {
+            diagram.doLayout();
+            this.selectedItem.isModified = true;
+        };
+
         if (isNew) {
             diagram.clear();
             diagram.constraints = diagram.constraints & ~DiagramConstraints.UndoRedo;
@@ -313,8 +309,6 @@ export class MindMap {
         } else {
             this.updateMindMap();
         }
-        diagram.contextMenuSettings.show = false;
-        diagram.dataBind();
     }
     public updateMindMap(): void {
         let diagram: Diagram = this.selectedItem.selectedDiagram;
@@ -350,88 +344,6 @@ export class MindMap {
 
 export abstract class MindMapUtilityMethods {
 
-    public static mindmapPaste(): void {
-        let diagram: Diagram = this.selectedItem.selectedDiagram;
-        let selectedNode: Node = diagram.selectedItems.nodes[0] as Node;
-        let selectedelement: Node;
-        let mindmapData: { [key: string]: Object };
-        let selecteditemOrientation: string;
-        if (this.selectedItem.pasteData.length > 0) {
-            diagram.startGroupAction();
-            diagram.paste(this.selectedItem.pasteData);
-            if (selectedNode.id !== 'rootNode') {
-                selecteditemOrientation = (selectedNode.addInfo as { [key: string]: Object }).orientation.toString();
-            } else {
-                selecteditemOrientation = (this.selectedItem.pastedFirstItem.addInfo as { [key: string]: Object }).orientation.toString();
-            }
-            selectedelement = this.selectedItem.pastedFirstItem;
-            mindmapData = MindMapUtilityMethods.getMindMapShape(selectedNode);
-            let connector: ConnectorModel = MindMapUtilityMethods.setConnectorDefault(diagram, selecteditemOrientation, mindmapData.connector, selectedNode.id, selectedelement.id);
-            diagram.add(connector);
-
-            let selectedNodeLevel: number;
-            selectedNodeLevel = (selectedNode.addInfo as INodeInfo).level;
-            this.updateLevel(selectedelement, selectedNodeLevel, selecteditemOrientation);
-            diagram.clearSelection();
-            this.selectedItem.preventPropertyChange = true;
-            diagram.select([selectedelement]);
-            this.selectedItem.preventPropertyChange = false;
-            diagram.doLayout();
-            diagram.endGroupAction();
-            diagram.bringIntoView(diagram.nodes[diagram.nodes.length - 1].wrapper.bounds);
-        }
-    }
-
-    private static updateLevel(parentNode: Node, level: number, orientation: string): void {
-        let diagram: Diagram = this.selectedItem.selectedDiagram;
-        let lastNode: Node = parentNode;
-        let level1: string;
-        (parentNode.addInfo as INodeInfo).level = level + 1;
-        level1 = 'Level' + (parentNode.addInfo as INodeInfo).level;
-        this.addMindMapLevels(level1);
-
-        (parentNode.addInfo as { [key: string]: Object }).orientation = orientation;
-        for (let i: number = parentNode.outEdges.length - 1; i >= 0; i--) {
-            let connector: Connector = MindMapUtilityMethods.getConnector(diagram.connectors, lastNode.outEdges[i]);
-            let childNode: Node = MindMapUtilityMethods.getNode(diagram.nodes, connector.targetID);
-            (childNode.addInfo as { [key: string]: Object }).orientation = orientation;
-            connector.sourcePortID = 'rightPort';
-            connector.targetPortID = 'leftPort';
-            if (orientation === 'Right') {
-                connector.sourcePortID = 'leftPort';
-                connector.targetPortID = 'rightPort';
-            }
-            if (childNode.outEdges.length > 0) {
-                this.updateLevel(childNode, (parentNode.addInfo as INodeInfo).level, orientation);
-            } else {
-                (childNode.addInfo as INodeInfo).level = (parentNode.addInfo as INodeInfo).level + 1;
-                level1 = 'Level' + (childNode.addInfo as INodeInfo).level;
-                this.addMindMapLevels(level1);
-            }
-        }
-
-        diagram.dataBind();
-    }
-
-    public static addMindMapLevels(level: string): void {
-        let mindmap: any = document.getElementById('mindMapLevels') as HTMLElement;
-        let dropdownlist: DropDownList = mindmap.ej2_instances[0];
-        let dropdowndatasource: any = dropdownlist.dataSource as { [key: string]: Object }[];
-        let isExist: boolean = false;
-        for (let i: number = 0; i < dropdowndatasource.length; i++) {
-            let data: { [key: string]: Object } = dropdowndatasource[i];
-            if (data.text === level) {
-                isExist = true;
-                break;
-            }
-        }
-        if (!isExist) {
-            dropdowndatasource.push({ text: level, value: level });
-        }
-        dropdownlist.dataSource = dropdowndatasource;
-        dropdownlist.dataBind();
-    }
-
     public static selectedItem: SelectorViewModel;
 
     private static lastFillIndex: number = 0;
@@ -444,7 +356,7 @@ export abstract class MindMapUtilityMethods {
             annotations: [{ content: 'MindMap', style: { color: '#000000' } }],
             shape: { type: 'Basic', shape: 'Rectangle', cornerRadius: 5 },
             ports: [{ id: 'leftPort', offset: { x: 0, y: 0.5 } }, { id: 'rightPort', offset: { x: 1, y: 0.5 } }],
-            addInfo: { level: 0 }, style: { fill: '#D0ECFF', strokeColor: '#80BFEA', strokeWidth: 1 },
+            addInfo: { level: 0 }, style: { fill: '#D0ECFF', strokeColor: '#80BFEA' },
             constraints: NodeConstraints.Default & ~NodeConstraints.Delete
         };
         this.selectedItem.selectedDiagram.add(node);
@@ -612,7 +524,6 @@ export abstract class MindMapUtilityMethods {
         diagram.startGroupAction();
         let mindmapData: { [key: string]: Object } = this.getMindMapShape(selectedNode);
         let node: NodeModel = mindmapData.node;
-        this.addMindMapLevels('Level' + (node.addInfo as { [key: string]: Object }).level);
         node.id = 'node' + this.selectedItem.randomIdGenerator();
         if (node.addInfo) {
             (node.addInfo as { [key: string]: Object }).orientation = orientation;
@@ -686,6 +597,45 @@ export abstract class MindMapUtilityMethods {
         return null;
     }
 
+    public static removeChild(): void {
+        let diagram: Diagram = this.selectedItem.selectedDiagram;
+        if (diagram.selectedItems.nodes.length > 0) {
+            this.selectedItem.preventPropertyChange = true;
+            diagram.historyManager.startGroupAction();
+            this.removeSubChild(diagram.selectedItems.nodes[0] as Node);
+            diagram.historyManager.endGroupAction();
+            diagram.doLayout();
+            this.selectedItem.preventPropertyChange = false;
+        }
+        this.selectedItem.isModified = true;
+    }
+
+    private static removeSubChild(node: Node): void {
+        let diagram: Diagram = this.selectedItem.selectedDiagram;
+        for (let i: number = node.outEdges.length - 1; i >= 0; i--) {
+            let connector: Connector = MindMapUtilityMethods.getConnector(diagram.connectors, node.outEdges[i]);
+            let childNode: Node = MindMapUtilityMethods.getNode(diagram.nodes, connector.targetID);
+            if (childNode != null && childNode.outEdges.length > 0) {
+                this.removeSubChild(childNode);
+            } else {
+                diagram.remove(childNode);
+            }
+        }
+        for (let j: number = node.inEdges.length - 1; j >= 0; j--) {
+            let connector: Connector = MindMapUtilityMethods.getConnector(diagram.connectors, node.inEdges[j]);
+            let childNode: Node = MindMapUtilityMethods.getNode(diagram.nodes, connector.sourceID);
+            let index: number = childNode.outEdges.indexOf(connector.id);
+            if (index > 0) {
+                let node1: string = childNode.outEdges[index - 1] as string;
+                let connector1: any = diagram.getObject(node1);
+                let node2: Node = MindMapUtilityMethods.getNode(diagram.nodes, connector1.targetID);
+                diagram.select([node2]);
+            } else {
+                diagram.select([childNode]);
+            }
+        }
+        diagram.remove(node);
+    }
     public static
         setConnectorDefault(diagram: Diagram, orientation: string, connector: ConnectorModel, sourceID: string, targetID: string):
         ConnectorModel {

@@ -3,7 +3,7 @@ font-family: 'Final diagram icons copy';
 src:
 url('Fonts/Final diagram icons copy.ttf') format('truetype'),
 url('Fonts/Final diagram icons copy.woff') format('woff'),
-url('Fonts/Final diagram icons copy.eot') format('eot'),
+url('Fonts/Final diagram icons copy.eot') format('embedded-opentype'),
 url('Fonts/Final diagram icons copy.svg?#Final diagram icons copy') format('svg');
 font-weight: normal;
 font-style: normal;

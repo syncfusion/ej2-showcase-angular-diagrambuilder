@@ -4,7 +4,7 @@
 import { Button } from '@syncfusion/ej2-buttons';
 import { SelectorViewModel } from './selector';
 import { Ajax } from '@syncfusion/ej2-base';
-import { Diagram, SnapConstraints } from '@syncfusion/ej2-diagrams';
+import { NodeModel, Diagram, SnapConstraints } from '@syncfusion/ej2-diagrams';
 import { MindMapUtilityMethods, MindMap } from './mindmap';
 import { OrgChartUtilityMethods, OrgChartData } from './orgchart';
 
@@ -150,10 +150,8 @@ export class PageCreation {
                 let map: MindMap = new MindMap(this.selectedItem);
                 map.createMindMap(false);
             }
-            let closeIconDiv: HTMLElement = (document.getElementById('diagram').querySelector('#closeIconDiv') as HTMLElement);
-            if (closeIconDiv) {
-                closeIconDiv.onclick = MindMapUtilityMethods.onHideNodeClick.bind(MindMapUtilityMethods);
-            }
+            (document.getElementById('diagram').querySelector('#closeIconDiv') as HTMLElement).onclick =
+                MindMapUtilityMethods.onHideNodeClick.bind(MindMapUtilityMethods);
         }
         if (this.selectedItem.diagramType === 'OrgChart') {
             if (!this.pageSwitch && !this.selectedItem.isTemplateLoad) {
@@ -161,10 +159,8 @@ export class PageCreation {
                 let org: OrgChartData = new OrgChartData(this.selectedItem);
                 org.createOrgChart(false);
             }
-            let closeIconDiv: HTMLElement = (document.getElementById('diagram').querySelector('#closeIconDiv') as HTMLElement);
-            if (closeIconDiv) {
-                closeIconDiv.onclick = OrgChartUtilityMethods.onHideNodeClick.bind(OrgChartUtilityMethods);
-            }
+            (document.getElementById('diagram').querySelector('#closeIconDiv') as HTMLElement).onclick =
+                OrgChartUtilityMethods.onHideNodeClick.bind(OrgChartUtilityMethods);
         }
         let btnView: any = document.getElementById('btnViewMenu');
         btnView = btnView.ej2_instances[0];
@@ -183,42 +179,6 @@ export class PageCreation {
             btnView.items[6].iconCss = (diagram.snapSettings.constraints & SnapConstraints.SnapToObject) ? 'sf-icon-Selection' : '';
             btnView.items[7].iconCss = (diagram.snapSettings.constraints & SnapConstraints.ShowLines) ? 'sf-icon-Selection' : '';
             btnView.items[9].iconCss = (diagram.snapSettings.constraints & SnapConstraints.SnapToLines) ? 'sf-icon-Selection' : '';
-        }
-    }
-
-    public loadJson(): void {
-        if (!this.selectedItem.uniqueId) {
-            this.selectedItem.uniqueId = this.selectedItem.randomIdGenerator();
-        }
-        if (this.selectedItem.isModified) {
-            let spanElement: HTMLSpanElement = document.getElementById('diagramreport') as HTMLSpanElement;
-            spanElement.innerHTML = 'Saving';
-            this.selectedItem.isModified = false;
-            let save: string = this.savePage();
-            let ajax: Ajax = new Ajax('https://ej2services.syncfusion.com/production/web-services/api/Diagram/SaveJson', 'POST', true, 'application/json');
-            let data: string = JSON.stringify({
-                DiagramName: this.selectedItem.uniqueId,
-                DiagramContent: save,
-            });
-            ajax.send(data).then();
-            let context: any = this;
-            ajax.onSuccess = (data: string): void => {
-                //if (window.location.pathname.length === 1) {
-                let uri: string = window.location.origin + this.selectedItem.getAbsolutePath() + '?id=' + this.selectedItem.uniqueId;
-                window.history.replaceState(null, null, uri);
-                context.isModified = false;
-                spanElement.innerHTML = 'Saved';
-                //}
-            };
-            ajax.onFailure = (args: string): void => {
-                context.isModified = false;
-                spanElement.innerHTML = 'Offline';
-            };
-            ajax.onError = (args: Event): Object => {
-                context.isModified = false;
-                spanElement.innerHTML = 'Offline';
-                return null;
-            };
         }
     }
 }
