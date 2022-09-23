@@ -720,6 +720,9 @@ export class HomeComponent implements AfterViewInit {
         } else if (args.item.text === 'Bezier') {
             diagram.drawingObject = { type: 'Bezier', style: { strokeWidth: 2 } };
         }
+        // else if(args.item.text === 'FreeHand'){
+        //     diagram.drawingObject = { type: 'Freehand', style: { strokeWidth: 2 } };
+        // }
         diagram.tool = DiagramTools.ContinuousDraw;
         diagram.clearSelection();
         this.removeSelectedToolbarItem();
@@ -1122,7 +1125,7 @@ export class HomeComponent implements AfterViewInit {
     public setConnectorDefaults(connector: Connector, diagram: Diagram): ConnectorModel {
         let connector1: ConnectorModel = {
             annotations: [
-                { content: '', style: { fill: '#ffffff' } }
+                { content: '', style: { fill: 'transparent' } }
             ],
             style: { strokeWidth: 2 }
         };
@@ -1252,7 +1255,25 @@ export class HomeComponent implements AfterViewInit {
             }
         }
     }
-
+    public segmentEditingChange(args:any):void{
+        let diagram: Diagram = this.selectedItem.selectedDiagram;
+       if(diagram.selectedItems.connectors){
+         if(args.checked == true){
+           for(let i=0;i<diagram.selectedItems.connectors.length;i++){
+             let connector: ConnectorModel= diagram.selectedItems.connectors[i];
+             connector.constraints = ConnectorConstraints.DragSegmentThumb | ConnectorConstraints.Default ;
+           }
+         }     
+       else
+       {
+         for(let i=0;i<diagram.selectedItems.connectors.length;i++){
+         let connector: ConnectorModel = diagram.selectedItems.connectors[i];
+         connector.constraints = ConnectorConstraints.Default & ~(ConnectorConstraints.DragSegmentThumb);
+         }
+       }
+       diagram.dataBind();
+     }
+   }
     public showColorPicker(propertyName: string, toolbarName: string): void {
         let fillElement: HTMLButtonElement =
             document.getElementById(propertyName).parentElement.getElementsByClassName('e-dropdown-btn')[0] as HTMLButtonElement;
