@@ -155,7 +155,7 @@ export class DropDownDataSources {
         { iconCss: 'sf-icon-StraightLine', text: 'Straight Line' },
         { iconCss: 'sf-icon-ConnectorMode', text: 'Orthogonal Line' },
         { iconCss: 'sf-icon-BeizerLine', text: 'Bezier' }
-        { iconCss : 'sf-icon-BeizerLine',text :'FreeHand'}
+        { iconCss: "sf-icon-free_hand", text: "FreeHand" }
     ];
 
     public orderCommandsList: ItemModel[] = [
