@@ -720,9 +720,9 @@ export class HomeComponent implements AfterViewInit {
         } else if (args.item.text === 'Bezier') {
             diagram.drawingObject = { type: 'Bezier', style: { strokeWidth: 2 } };
         }
-        // else if(args.item.text === 'FreeHand'){
-        //     diagram.drawingObject = { type: 'Freehand', style: { strokeWidth: 2 } };
-        // }
+        else if(args.item.text === 'FreeHand'){
+            diagram.drawingObject = { type: 'Freehand', style: { strokeWidth: 2 } };
+        }
         diagram.tool = DiagramTools.ContinuousDraw;
         diagram.clearSelection();
         this.removeSelectedToolbarItem();
