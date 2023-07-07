@@ -39,9 +39,9 @@ export abstract class CommonKeyboardCommands {
 
     public static download(data: string, filename: string): void {
         let dataStr: string = data;
-        if (window.navigator.msSaveBlob) {
+        if ((window.navigator as any).msSaveBlob) {
             let blob: Blob = new Blob([dataStr], { type: 'data:text/json;charset=utf-8,' });
-            window.navigator.msSaveOrOpenBlob(blob, filename + '.json');
+            (window.navigator as any).msSaveOrOpenBlob(blob, filename + '.json');
         } else {
             dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(dataStr);
             let a: HTMLAnchorElement = document.createElement('a');
