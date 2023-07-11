@@ -70,10 +70,10 @@ export class HomeComponent implements AfterViewInit {
     public saveDialog: DialogComponent;
 
     @ViewChild('customPropertyDialog')
-    public customPropertyDialog: DialogComponent;
+    public customPropertyDialog!: DialogComponent;
 
     @ViewChild('layerDialog')
-    public layerDialog: DialogComponent;
+    public layerDialog!: DialogComponent;
 
     @ViewChild('tooltipDialog')
     public tooltipDialog: DialogComponent;
@@ -157,8 +157,8 @@ export class HomeComponent implements AfterViewInit {
     public dropDownDataSources: DropDownDataSources = new DropDownDataSources();
     public selectedItem: SelectorViewModel = new SelectorViewModel();
     public page: PageCreation = new PageCreation(this.selectedItem);
-    public customProperty: CustomProperties = new CustomProperties(this.selectedItem, this.customPropertyDialog);
-    public diagramLayer: DiagramBuilderLayer = new DiagramBuilderLayer(this.selectedItem, this.layerDialog);
+    public customProperty: CustomProperties = new CustomProperties(this.selectedItem, this.customPropertyDialog as unknown as DialogComponent);
+    public diagramLayer: DiagramBuilderLayer = new DiagramBuilderLayer(this.selectedItem,this.layerDialog as unknown as DialogComponent);
     public diagramEvents: DiagramClientSideEvents = new DiagramClientSideEvents(this.selectedItem, this.page);
     public diagramPropertyBinding: DiagramPropertyBinding = new DiagramPropertyBinding(this.selectedItem, this.page);
     public mindmapPropertyBinding: MindMapPropertyBinding = new MindMapPropertyBinding(this.selectedItem);

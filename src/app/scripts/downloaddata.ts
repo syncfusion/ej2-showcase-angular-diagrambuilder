@@ -49,9 +49,9 @@ export class DownloadExampleFiles {
             }
             csv += '\n';
         });
-        if (window.navigator.msSaveBlob) {
+        if ((window.navigator as any).msSaveBlob) {
             let blob: Blob = new Blob([csv], { type: 'text/plain;charset=utf-8;' });
-            window.navigator.msSaveOrOpenBlob(blob, 'people.csv');
+            (window.navigator as any).msSaveOrOpenBlob(blob, 'people.csv');
         } else {
             let hiddenElement: HTMLAnchorElement = document.createElement('a');
             hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
@@ -65,9 +65,9 @@ export class DownloadExampleFiles {
 
     public downloadJSON(): void {
         let dataStr: string = JSON.stringify(this.data);
-        if (window.navigator.msSaveBlob) {
+        if ((window.navigator as any).msSaveBlob) {
             let blob: Blob = new Blob([dataStr], { type: 'data:text/json;charset=utf-8,' });
-            window.navigator.msSaveOrOpenBlob(blob, 'people.json');
+            (window.navigator as any).msSaveOrOpenBlob(blob, 'people.json');
         } else {
             dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(dataStr);
             let downloadAnchorNode: HTMLAnchorElement = document.createElement('a');
@@ -92,8 +92,8 @@ export class DownloadExampleFiles {
             '</people>';
         let filename: string = 'people.xml';
         let bb: Blob = new Blob([xmltext], { type: 'text/plain' });
-        if (window.navigator.msSaveBlob) {
-            window.navigator.msSaveOrOpenBlob(bb, filename);
+        if ((window.navigator as any).msSaveBlob) {
+            (window.navigator as any).msSaveOrOpenBlob(bb, filename);
         } else {
             let pom: HTMLAnchorElement = document.createElement('a');
             pom.setAttribute('href', window.URL.createObjectURL(bb));

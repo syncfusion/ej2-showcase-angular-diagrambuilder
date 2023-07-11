@@ -6,6 +6,11 @@ The diagram builder demo application showcases creating diagrams such as flow ch
 
 ### Install
 
+* Use node version 
+```
+v14.20.0
+```
+
 * To install all dependent packages, use the below command.
 
 ```
@@ -14,7 +19,7 @@ npm install
 * If Angular CLI is not installed into your machine, please use the below command to install Angular CLI.
 
 ```
-npm install -g @angular/cli@7.2.4
+npm install -g @angular/cli@15.1.5
 ```
 
 ### Run
