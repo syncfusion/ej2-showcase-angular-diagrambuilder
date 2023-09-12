@@ -42,7 +42,9 @@
         "@syncfusion/ej2-angular-splitbuttons": "*",
         "rxjs": "~7.8.0",
         "tslib": "^2.3.0",
-        "zone.js": "~0.12.0"
+        "zone.js": "~0.12.0",
+        "karma": ">=6.3.16",
+        "shelljs": ">=0.8.5"
     },
     "devDependencies": {
         "@angular-devkit/build-angular": "^15.1.5",
@@ -55,7 +57,8 @@
         "karma-coverage": "~2.2.0",
         "karma-jasmine": "~5.1.0",
         "karma-jasmine-html-reporter": "~2.0.0",
-        "typescript": "~4.9.4"
+        "typescript": "~4.9.4",
+        "shelljs": ">=0.8.5"
     },
     "keywords": [
         "ej2",
