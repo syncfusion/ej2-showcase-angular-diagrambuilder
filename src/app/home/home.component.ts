@@ -149,8 +149,8 @@ export class HomeComponent implements AfterViewInit {
 
     /* Upload Members */
     public path: Object = {
-        saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-        removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove'
+        saveUrl: 'https://services.syncfusion.com/angular/production/api/FileUploader/Save',
+        removeUrl: 'https://services.syncfusion.com/angular/production/api/FileUploader/Remove'
     };
 
     /* Global Member Variables */
