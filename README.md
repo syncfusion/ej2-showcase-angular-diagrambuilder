@@ -1,4 +1,4 @@
-# Essential JS 2 for Angular - Diagram Builder
+# Essential&reg; JS 2 for Angular - Diagram Builder
 
 The diagram builder demo application showcases creating diagrams such as flow charts, Mind Map diagrams, and organization chart through visual interface.
 
